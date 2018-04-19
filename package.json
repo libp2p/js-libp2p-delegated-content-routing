@@ -1,8 +1,8 @@
 {
-  "name": "libp2p-delegated-peer-routing",
+  "name": "libp2p-delegated-content-routing",
   "version": "0.1.0",
   "main": "src/index.js",
-  "repository": "git@github.com:libp2p/js-libp2p-delegated-peer-routing.git",
+  "repository": "git@github.com:libp2p/js-libp2p-delegated-content-routing.git",
   "author": "dignifiedquire <dignifiedquire@gmail.com>",
   "license": "MIT",
   "private": false,
@@ -10,6 +10,7 @@
     "lint": "aegir lint",
     "build": "aegir build",
     "test": "aegir test",
+    "test:node": "aegir test --target node",
     "release": "aegir release",
     "release-minor": "aegir release --type minor",
     "release-major": "aegir release --type major",

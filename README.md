@@ -10,12 +10,12 @@ const DelegatedContentRouting = require('libp2p-delegated-content-routing')
 // default is to use ipfs.io
 const routing = new DelegatedContentRouing()
 
-routing.findProviders(key, timeout, (err, peerInfos) => {
+routing.findProviders(key, (err, peerInfos) => {
   if (err) {
     return console.error(err)
   }
 
-  console.log('found peers, peerInfos)
+  console.log('found peers', peerInfos)
 })
 
 routing.provide(key, (err) => {
