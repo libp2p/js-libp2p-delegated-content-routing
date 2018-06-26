@@ -2,6 +2,10 @@
 
 Leverage other peers in the network to perform Content Routing calls.
 
+## Lead Maintainer
+
+[Jacob Heun](https://github.com/jacobheun)
+
 ## Example
 
 ```
