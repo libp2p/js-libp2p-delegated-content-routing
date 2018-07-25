@@ -43,7 +43,7 @@ class DelegatedContentRouting {
       throw new Error('missing self peerInfo')
     }
 
-    this.api = Object.assign({}, defaultConfig(), api || DEFAULT_IPFS_API)
+    this.api = Object.assign({}, defaultConfig(), DEFAULT_IPFS_API, api)
     this.dht = dht(this.api)
     this.swarm = swarm(this.api)
     this.refs = refs(this.api)
@@ -101,14 +101,15 @@ class DelegatedContentRouting {
     const addrs = this.bootstrappers.map((addr) => {
       return addr.encapsulate(`/p2p-circuit/ipfs/${this.peerInfo.id}`)
     })
+
     series([
-      // TODO: do we want to connect through all of them?
       (cb) => parallel(addrs.map((addr) => {
         return reflect((cb) => this.swarm.connect(addr.toString(), cb))
       }), (err, results) => {
         if (err) {
           return cb(err)
         }
+
         // only some need to succeed
         const success = results.filter((res) => res.error == null)
         if (success.length === 0) {

@@ -5,48 +5,127 @@ const expect = require('chai').expect
 const IPFSFactory = require('ipfsd-ctl')
 const async = require('async')
 const CID = require('cids')
-const IPFSApi = require('ipfs-api')
 
 const factory = IPFSFactory.create({ type: 'go' })
 
 const DelegatedContentRouting = require('../src')
 
-describe('DelegatedContentRouting', () => {
+function spawnNode (boostrap, callback) {
+  if (typeof boostrap === 'function') {
+    callback = boostrap
+    boostrap = []
+  }
+
+  factory.spawn({
+    // Lock down the nodes so testing can be deterministic
+    config: {
+      Bootstrap: boostrap,
+      Discovery: {
+        MDNS: {
+          Enabled: false
+        }
+      }
+    }
+  }, (err, node) => {
+    if (err) return callback(err)
+
+    node.api.id((err, id) => {
+      if (err) return callback(err)
+
+      callback(null, node, id)
+    })
+  })
+}
+
+describe('DelegatedContentRouting', function () {
+  this.timeout(20 * 1000) // we're spawning daemons, give ci some time
+
   let selfNode
   let selfId
+  let delegatedNode
+  let bootstrapNode
+  let bootstrapId
 
-  beforeEach((done) => {
-    factory.spawn((err, node) => {
-      if (err != null) {
-        return done(err)
-      }
-      selfNode = node
-
-      selfNode.api.id((err, id) => {
-        if (err) {
-          return done(err)
-        }
+  before((done) => {
+    async.waterfall([
+      // Spawn a "Boostrap" node that doesnt connect to anything
+      (cb) => spawnNode(cb),
+      (ipfsd, id, cb) => {
+        bootstrapNode = ipfsd
+        bootstrapId = id
+        cb()
+      },
+      // Spawn our local node and bootstrap the bootstrapper node
+      (cb) => spawnNode(bootstrapId.addresses, cb),
+      (ipfsd, id, cb) => {
+        selfNode = ipfsd
         selfId = id
-        done()
+        cb()
+      },
+      // Spawn the delegate node and bootstrap the bootstrapper node
+      (cb) => spawnNode(bootstrapId.addresses, cb),
+      (ipfsd, id, cb) => {
+        delegatedNode = ipfsd
+        cb()
+      }
+    ], done)
+  })
+
+  after((done) => {
+    async.parallel([
+      (cb) => selfNode.stop(cb),
+      (cb) => delegatedNode.stop(cb),
+      (cb) => bootstrapNode.stop(cb)
+    ], done)
+  })
+
+  describe('create', () => {
+    it('should require peerInfo', () => {
+      expect(() => new DelegatedContentRouting()).to.throw()
+    })
+
+    it('should default to https://ipfs.io as the delegate', () => {
+      const router = new DelegatedContentRouting(selfId)
+
+      expect(router.api).to.include({
+        'api-path': '/api/v0/',
+        protocol: 'https',
+        port: 443,
+        host: 'ipfs.io'
       })
+    })
+
+    it('should allow for just specifying the host', () => {
+      const router = new DelegatedContentRouting(selfId, {
+        host: 'other.ipfs.io'
+      })
+
+      expect(router.api).to.include({
+        'api-path': '/api/v0/',
+        protocol: 'https',
+        port: 443,
+        host: 'other.ipfs.io'
+      })
+    })
+
+    it('should allow for overriding the api', () => {
+      const api = {
+        'api-path': '/api/v1/',
+        protocol: 'http',
+        port: 8000,
+        host: 'localhost'
+      }
+      const router = new DelegatedContentRouting(selfId, api)
+
+      expect(router.api).to.include(api)
     })
   })
 
-  afterEach(() => {
-    selfNode.stop()
-  })
-
   describe('findProviders', () => {
-    it('fetches providers on the connected node', function (done) {
-      this.timeout(100000)
-
-      let ipfsd
-
+    it('should be able to find providers through the delegate node', function (done) {
       async.waterfall([
-        (cb) => factory.spawn(cb),
-        (_ipfsd, cb) => {
-          ipfsd = _ipfsd
-          const opts = ipfsd.apiAddr.toOptions()
+        (cb) => {
+          const opts = delegatedNode.apiAddr.toOptions()
           const routing = new DelegatedContentRouting(selfId, {
             protocol: 'http',
             port: opts.port,
@@ -56,45 +135,28 @@ describe('DelegatedContentRouting', () => {
           routing.findProviders(cid, cb)
         },
         (providers, cb) => {
-          expect(providers).to.have.lengthOf.above(0)
-
-          ipfsd.stop()
-          cb()
-        }
-      ], done)
-    })
-
-    // skipping, as otherwise CI will randomly break
-    it.skip('fetches providers on the connected node (using ipfs.io)', function (done) {
-      this.timeout(100000)
-
-      const routing = new DelegatedContentRouting(selfId)
-      const cid = 'QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv'
-
-      async.waterfall([
-        (cb) => routing.findProviders(cid, cb),
-        (providers, cb) => {
-          expect(providers).to.have.lengthOf.above(0)
+          // We should get our local node and the bootstrap node as providers.
+          // The delegate node is not included, because it is handling the requests
+          expect(providers).to.have.length(2)
+          expect(providers.map((p) => p.id)).to.have.members([
+            bootstrapId.id,
+            selfId.id
+          ])
           cb()
         }
       ], done)
     })
   })
 
-  describe.only('provide', () => {
-    it('makes content available on the delegated node', function (done) {
-      this.timeout(100000)
-
-      let routing
-      let ipfsd
+  describe('provide', () => {
+    it('should be able to register as a content provider to the delegate node', function (done) {
+      let contentRouter
       let cid
-      let delegateId
+
       async.waterfall([
-        (cb) => factory.spawn(cb),
-        (_ipfsd, cb) => {
-          ipfsd = _ipfsd
-          const opts = ipfsd.apiAddr.toOptions()
-          routing = new DelegatedContentRouting(selfId, {
+        (cb) => {
+          const opts = delegatedNode.apiAddr.toOptions()
+          contentRouter = new DelegatedContentRouting(selfId, {
             protocol: 'http',
             port: opts.port,
             host: opts.host
@@ -104,12 +166,10 @@ describe('DelegatedContentRouting', () => {
         },
         (res, cb) => {
           cid = new CID(res[0].hash)
-          routing.provide(cid, cb)
+          contentRouter.provide(cid, cb)
         },
-        (cb) => ipfsd.api.id(cb),
-        (id, cb) => {
-          delegateId = id
-          ipfsd.api.dht.findprovs(cid.toBaseEncodedString(), {n: 1}, cb)
+        (cb) => {
+          delegatedNode.api.dht.findprovs(cid.toBaseEncodedString(), cb)
         },
         (provs, cb) => {
           let providers = []
@@ -117,44 +177,9 @@ describe('DelegatedContentRouting', () => {
             providers = providers.concat(res.Responses)
           })
 
-          const res = providers.find((prov) => prov.ID === delegateId.id)
-          expect(res != null).to.be.eql(true)
-
-          ipfsd.stop()
-          cb()
-        }
-      ], done)
-    })
-
-    // skipping, as otherwise CI will randomly break
-    it.skip('makes content available on the delegated node (using ipfs.io)', function (done) {
-      this.timeout(100000)
-
-      const routing = new DelegatedContentRouting(selfId)
-      const api = new IPFSApi(routing.api)
-
-      let cid
-
-      async.waterfall([
-        (cb) => {
-          selfNode.api.files.add(Buffer.from(`hello-${Math.random()}`), cb)
-        },
-        (res, cb) => {
-          cid = new CID(res[0].hash)
-          routing.provide(cid, cb)
-        },
-        (cb) => {
-          console.log('findprovs')
-          // TODO: this does not return, why?
-          api.dht.findprovs(cid.toBaseEncodedString(), {n: 1}, cb)
-        },
-        (provs, cb) => {
-          let providers = []
-          provs.filter((res) => Boolean(res.Responses)).forEach((res) => {
-            providers = providers.concat(res.Responses)
-          })
-          console.log('got provs', providers)
-          expect(providers).to.have.lengthOf.above(0)
+          // We are hosting the file, validate we're the provider
+          const res = providers.find((prov) => prov.ID === selfId.id)
+          expect(res.ID).to.equal(selfId.id)
 
           cb()
         }
