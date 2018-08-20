@@ -99,7 +99,7 @@ class DelegatedContentRouting {
    */
   provide (key, callback) {
     const addrs = this.bootstrappers.map((addr) => {
-      return addr.encapsulate(`/p2p-circuit/ipfs/${this.peerId.id}`)
+      return addr.encapsulate(`/p2p-circuit/ipfs/${this.peerId.toB58String()}`)
     })
 
     series([

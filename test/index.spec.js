@@ -5,6 +5,7 @@ const expect = require('chai').expect
 const IPFSFactory = require('ipfsd-ctl')
 const async = require('async')
 const CID = require('cids')
+const PeerId = require('peer-id')
 
 const factory = IPFSFactory.create({ type: 'go' })
 
@@ -59,7 +60,7 @@ describe('DelegatedContentRouting', function () {
       (cb) => spawnNode(bootstrapId.addresses, cb),
       (ipfsd, id, cb) => {
         selfNode = ipfsd
-        selfId = id
+        selfId = PeerId.createFromB58String(id.id)
         cb()
       },
       // Spawn the delegate node and bootstrap the bootstrapper node
@@ -140,7 +141,7 @@ describe('DelegatedContentRouting', function () {
           expect(providers).to.have.length(2)
           expect(providers.map((p) => p.id)).to.have.members([
             bootstrapId.id,
-            selfId.id
+            selfId.toB58String()
           ])
           cb()
         }
@@ -178,8 +179,8 @@ describe('DelegatedContentRouting', function () {
           })
 
           // We are hosting the file, validate we're the provider
-          const res = providers.find((prov) => prov.ID === selfId.id)
-          expect(res.ID).to.equal(selfId.id)
+          const res = providers.find((prov) => prov.ID === selfId.toB58String())
+          expect(res.ID).to.equal(selfId.toB58String())
 
           cb()
         }
