@@ -8,11 +8,16 @@ Leverage other peers in the network to perform Content Routing calls.
 
 ## Example
 
-```
+```js
 const DelegatedContentRouting = require('libp2p-delegated-content-routing')
 
 // default is to use ipfs.io
-const routing = new DelegatedContentRouing()
+const routing = new DelegatedContentRouing(peerId, {
+  // use default api settings
+  protocol: 'https',
+  port: 443,
+  host: 'ipfs.io'
+})
 
 routing.findProviders(key, (err, peerInfos) => {
   if (err) {
