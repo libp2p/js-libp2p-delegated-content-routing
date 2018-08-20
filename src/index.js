@@ -34,13 +34,13 @@ class DelegatedContentRouting {
   /**
    * Create a new DelegatedContentRouting instance.
    *
-   * @param {PeerInfo} peerInfo - the node that is using this routing.
-   * @param {object} [api] - the api endpoint of the delegated node to use.
-   * @param {Array<Multiaddr>} [bootstrappers] - list of bootstrapper nodes we are connected to.
+   * @param {PeerID} peerId - the id of the node that is using this routing.
+   * @param {object} [api] - (Optional) the api endpoint of the delegated node to use.
+   * @param {Array<Multiaddr>} [bootstrappers] - (Optional) list of bootstrapper nodes we are connected to.
    */
-  constructor (peerInfo, api, bootstrappers) {
-    if (peerInfo == null) {
-      throw new Error('missing self peerInfo')
+  constructor (peerId, api, bootstrappers) {
+    if (peerId == null) {
+      throw new Error('missing self peerId')
     }
 
     this.api = Object.assign({}, defaultConfig(), DEFAULT_IPFS_API, api)
@@ -48,7 +48,7 @@ class DelegatedContentRouting {
     this.swarm = swarm(this.api)
     this.refs = refs(this.api)
 
-    this.peerInfo = peerInfo
+    this.peerId = peerId
     this.bootstrappers = bootstrappers || DEFAULT_BOOSTRAP_NODES.map((addr) => multiaddr(addr))
   }
 
@@ -99,7 +99,7 @@ class DelegatedContentRouting {
    */
   provide (key, callback) {
     const addrs = this.bootstrappers.map((addr) => {
-      return addr.encapsulate(`/p2p-circuit/ipfs/${this.peerInfo.id}`)
+      return addr.encapsulate(`/p2p-circuit/ipfs/${this.peerId.id}`)
     })
 
     series([
