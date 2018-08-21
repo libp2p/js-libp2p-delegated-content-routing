@@ -63,7 +63,7 @@ class DelegatedContentRouting {
    * @returns {void}
    */
   findProviders (key, callback) {
-    this.dht.findprovs(key, (err, results) => {
+    this.dht.findprovs(key.toBaseEncodedString(), (err, results) => {
       if (err) {
         return callback(err)
       }

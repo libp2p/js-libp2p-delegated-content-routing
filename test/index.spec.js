@@ -132,7 +132,7 @@ describe('DelegatedContentRouting', function () {
             port: opts.port,
             host: opts.host
           })
-          const cid = 'QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv'
+          const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
           routing.findProviders(cid, cb)
         },
         (providers, cb) => {
