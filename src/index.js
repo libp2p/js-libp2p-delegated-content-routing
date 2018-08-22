@@ -59,10 +59,16 @@ class DelegatedContentRouting {
    * - does not support the `timeout` parameter, as this is specific to the delegate node.
    *
    * @param {CID} key
+   * @param {number} _timeout This is ignored and is only present to comply with the dht interface
    * @param {function(Error, Array<PeerInfo>)} callback
    * @returns {void}
    */
-  findProviders (key, callback) {
+  findProviders (key, _timeout, callback) {
+    if (typeof _timeout == 'function') {
+      callback = _timeout
+      _timeout = null
+    }
+
     this.dht.findprovs(key.toBaseEncodedString(), (err, results) => {
       if (err) {
         return callback(err)
