@@ -64,7 +64,7 @@ class DelegatedContentRouting {
    * @returns {void}
    */
   findProviders (key, _timeout, callback) {
-    if (typeof _timeout == 'function') {
+    if (typeof _timeout === 'function') {
       callback = _timeout
       _timeout = null
     }
