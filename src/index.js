@@ -1,6 +1,7 @@
 'use strict'
 
 const PeerInfo = require('peer-info')
+const PeerID = require('peer-id')
 const dht = require('ipfs-api/src/dht')
 const swarm = require('ipfs-api/src/swarm')
 const refs = require('ipfs-api/src/refs')
@@ -80,7 +81,9 @@ class DelegatedContentRouting {
         .filter((res) => Boolean(res.Responses))
         .forEach((res) => {
           res.Responses.forEach((raw) => {
-            const info = new PeerInfo(raw.ID)
+            const info = new PeerInfo(
+              PeerID.createFromB58String(raw.ID)
+            )
             if (raw.Addrs) {
               raw.Addrs.forEach((addr) => info.multiaddrs.add(addr))
             }

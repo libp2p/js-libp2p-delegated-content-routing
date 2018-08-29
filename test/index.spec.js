@@ -139,7 +139,7 @@ describe('DelegatedContentRouting', function () {
           // We should get our local node and the bootstrap node as providers.
           // The delegate node is not included, because it is handling the requests
           expect(providers).to.have.length(2)
-          expect(providers.map((p) => p.id)).to.have.members([
+          expect(providers.map((p) => p.id.toB58String())).to.have.members([
             bootstrapId.id,
             selfId.toB58String()
           ])
