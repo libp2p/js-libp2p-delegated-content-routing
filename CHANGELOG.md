@@ -1,3 +1,13 @@
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.2.0...v0.2.1) (2018-08-30)
+
+
+### Bug Fixes
+
+* better support peer ids ([1f872f3](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/1f872f3))
+
+
+
 <a name="0.2.0"></a>
 # 0.2.0 (2018-08-28)
 
