@@ -11,6 +11,7 @@ const parallel = require('async/parallel')
 const reflect = require('async/reflect')
 const multiaddr = require('multiaddr')
 
+const DEFAULT_MAX_TIMEOUT = 30e3 // 30 second default
 const DEFAULT_IPFS_API = {
   protocol: 'https',
   port: 443,
@@ -57,20 +58,23 @@ class DelegatedContentRouting {
    * Search the dht for providers of the given CID.
    *
    * - call `findProviders` on the delegated node.
-   * - does not support the `timeout` parameter, as this is specific to the delegate node.
    *
    * @param {CID} key
-   * @param {number} _timeout This is ignored and is only present to comply with the dht interface
+   * @param {number} timeout How long the query can take. Defaults to 30 seconds
    * @param {function(Error, Array<PeerInfo>)} callback
    * @returns {void}
    */
-  findProviders (key, _timeout, callback) {
-    if (typeof _timeout === 'function') {
-      callback = _timeout
-      _timeout = null
+  findProviders (key, timeout, callback) {
+    if (typeof timeout === 'function') {
+      callback = timeout
+      timeout = null
     }
 
-    this.dht.findprovs(key.toBaseEncodedString(), (err, results) => {
+    timeout = timeout || DEFAULT_MAX_TIMEOUT
+
+    this.dht.findprovs(key.toBaseEncodedString(), {
+      timeout: `${timeout}ms` // The api requires specification of the time unit (s/ms)
+    }, (err, results) => {
       if (err) {
         return callback(err)
       }
