@@ -148,7 +148,7 @@ describe('DelegatedContentRouting', function () {
       ], done)
     })
 
-    it('should be able to specify a timeout', function (done) {
+    it('should be able to specify a maxTimeout', function (done) {
       async.waterfall([
         (cb) => {
           const opts = delegatedNode.apiAddr.toOptions()
@@ -158,7 +158,7 @@ describe('DelegatedContentRouting', function () {
             host: opts.host
           })
           const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
-          routing.findProviders(cid, 5e3, cb)
+          routing.findProviders(cid, { maxTimeout: 5e3 }, cb)
         },
         (providers, cb) => {
           // We should get our local node and the bootstrap node as providers.
