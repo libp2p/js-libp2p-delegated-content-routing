@@ -147,6 +147,31 @@ describe('DelegatedContentRouting', function () {
         }
       ], done)
     })
+
+    it('should be able to specify a maxTimeout', function (done) {
+      async.waterfall([
+        (cb) => {
+          const opts = delegatedNode.apiAddr.toOptions()
+          const routing = new DelegatedContentRouting(selfId, {
+            protocol: 'http',
+            port: opts.port,
+            host: opts.host
+          })
+          const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
+          routing.findProviders(cid, { maxTimeout: 5e3 }, cb)
+        },
+        (providers, cb) => {
+          // We should get our local node and the bootstrap node as providers.
+          // The delegate node is not included, because it is handling the requests
+          expect(providers).to.have.length(2)
+          expect(providers.map((p) => p.id.toB58String())).to.have.members([
+            bootstrapId.id,
+            selfId.toB58String()
+          ])
+          cb()
+        }
+      ], done)
+    })
   })
 
   describe('provide', () => {
