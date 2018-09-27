@@ -1,6 +1,6 @@
 {
   "name": "libp2p-delegated-content-routing",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Leverage other peers in the libp2p network to perform Content Routing calls.",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
