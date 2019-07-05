@@ -138,7 +138,7 @@ class DelegatedContentRouting {
         cb()
       }),
       (cb) => {
-        this.refs(key.toBaseEncodedString(), {recursive: true}, cb)
+        this.refs(key.toBaseEncodedString(), { recursive: true }, cb)
       }
     ], (err) => callback(err))
   }
