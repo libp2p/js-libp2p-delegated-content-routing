@@ -18,7 +18,7 @@
     "coverage": "aegir coverage"
   },
   "devDependencies": {
-    "aegir": "^15.2.0",
+    "aegir": "^19.0.5",
     "chai": "^4.2.0",
     "cids": "~0.5.5",
     "go-ipfs-dep": "~0.4.17",
