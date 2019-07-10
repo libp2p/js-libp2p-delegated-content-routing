@@ -204,15 +204,14 @@ describe('DelegatedContentRouting', function () {
           cid = new CID(res[0].hash)
           contentRouter.provide(cid, cb)
         },
+        (cb) => setTimeout(cb, 1000),
         (cb) => {
           delegatedNode.api.dht.findProvs(cid, cb)
         },
         (providers, cb) => {
           const providerIds = providers.map(p => p.id.toB58String())
-          // Us and the delegate should be providers
-          expect(providers).to.have.length(2)
+          // The delegate should be a provider
           expect(providerIds).to.have.members([
-            selfId.toB58String(),
             delegatedId.toB58String()
           ])
           cb()
