@@ -2,10 +2,10 @@
 
 const PeerInfo = require('peer-info')
 const PeerID = require('peer-id')
-const dht = require('ipfs-api/src/dht')
-const swarm = require('ipfs-api/src/swarm')
-const refs = require('ipfs-api/src/refs')
-const defaultConfig = require('ipfs-api/src/utils/default-config')
+const dht = require('ipfs-http-client/src/dht')
+const swarm = require('ipfs-http-client/src/swarm')
+const refs = require('ipfs-http-client/src/files-regular/refs')
+const defaultConfig = require('ipfs-http-client/src/utils/default-config')
 const series = require('async/series')
 const parallel = require('async/parallel')
 const reflect = require('async/reflect')
@@ -79,31 +79,9 @@ class DelegatedContentRouting {
 
     options.maxTimeout = options.maxTimeout || DEFAULT_MAX_TIMEOUT
 
-    this.dht.findprovs(key.toBaseEncodedString(), {
+    this.dht.findProvs(key.toString(), {
       timeout: `${options.maxTimeout}ms` // The api requires specification of the time unit (s/ms)
-    }, (err, results) => {
-      if (err) {
-        return callback(err)
-      }
-
-      // cleanup result from ipfs-api
-      const infos = []
-      results
-        .filter((res) => Boolean(res.Responses))
-        .forEach((res) => {
-          res.Responses.forEach((raw) => {
-            const info = new PeerInfo(
-              PeerID.createFromB58String(raw.ID)
-            )
-            if (raw.Addrs) {
-              raw.Addrs.forEach((addr) => info.multiaddrs.add(addr))
-            }
-            infos.push(info)
-          })
-        })
-
-      callback(null, infos)
-    })
+    }, callback)
   }
 
   /**
@@ -138,7 +116,7 @@ class DelegatedContentRouting {
         cb()
       }),
       (cb) => {
-        this.refs(key.toBaseEncodedString(), { recursive: true }, cb)
+        this.refs(key.toString(), { recursive: true }, cb)
       }
     ], (err) => callback(err))
   }

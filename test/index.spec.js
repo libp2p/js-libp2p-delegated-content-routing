@@ -11,16 +11,16 @@ const factory = IPFSFactory.create({ type: 'go' })
 
 const DelegatedContentRouting = require('../src')
 
-function spawnNode (boostrap, callback) {
-  if (typeof boostrap === 'function') {
-    callback = boostrap
-    boostrap = []
+function spawnNode (bootstrap, callback) {
+  if (typeof bootstrap === 'function') {
+    callback = bootstrap
+    bootstrap = []
   }
 
   factory.spawn({
     // Lock down the nodes so testing can be deterministic
     config: {
-      Bootstrap: boostrap,
+      Bootstrap: bootstrap,
       Discovery: {
         MDNS: {
           Enabled: false
@@ -49,7 +49,7 @@ describe('DelegatedContentRouting', function () {
 
   before((done) => {
     async.waterfall([
-      // Spawn a "Boostrap" node that doesnt connect to anything
+      // Spawn a "bootstrap" node that doesnt connect to anything
       (cb) => spawnNode(cb),
       (ipfsd, id, cb) => {
         bootstrapNode = ipfsd
@@ -188,14 +188,14 @@ describe('DelegatedContentRouting', function () {
             host: opts.host
           })
 
-          selfNode.api.files.add(Buffer.from(`hello-${Math.random()}`), cb)
+          selfNode.api.add(Buffer.from(`hello-${Math.random()}`), cb)
         },
         (res, cb) => {
           cid = new CID(res[0].hash)
           contentRouter.provide(cid, cb)
         },
         (cb) => {
-          delegatedNode.api.dht.findprovs(cid.toBaseEncodedString(), cb)
+          delegatedNode.api.dht.findProvs(cid.toString(), cb)
         },
         (provs, cb) => {
           let providers = []
