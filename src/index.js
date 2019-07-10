@@ -1,7 +1,5 @@
 'use strict'
 
-const PeerInfo = require('peer-info')
-const PeerID = require('peer-id')
 const dht = require('ipfs-http-client/src/dht')
 const swarm = require('ipfs-http-client/src/swarm')
 const refs = require('ipfs-http-client/src/files-regular/refs')
