@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "async": "^2.6.2",
-    "ipfs-http-client": "github:ipfs/js-ipfs-http-client#fix/findpeerprovs-response",
+    "ipfs-http-client": "^33.0.1",
     "multiaddr": "^6.1.0",
     "peer-id": "^0.12.2",
     "peer-info": "^0.15.1"
