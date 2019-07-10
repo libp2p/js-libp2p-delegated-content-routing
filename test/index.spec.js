@@ -3,7 +3,8 @@
 
 const expect = require('chai').expect
 const IPFSFactory = require('ipfsd-ctl')
-const async = require('async')
+const parallel = require('async/parallel')
+const waterfall = require('async/waterfall')
 const CID = require('cids')
 const PeerId = require('peer-id')
 
@@ -44,11 +45,12 @@ describe('DelegatedContentRouting', function () {
   let selfNode
   let selfId
   let delegatedNode
+  let delegatedId
   let bootstrapNode
   let bootstrapId
 
   before((done) => {
-    async.waterfall([
+    waterfall([
       // Spawn a "bootstrap" node that doesnt connect to anything
       (cb) => spawnNode(cb),
       (ipfsd, id, cb) => {
@@ -67,13 +69,14 @@ describe('DelegatedContentRouting', function () {
       (cb) => spawnNode(bootstrapId.addresses, cb),
       (ipfsd, id, cb) => {
         delegatedNode = ipfsd
+        delegatedId = PeerId.createFromB58String(id.id)
         cb()
       }
     ], done)
   })
 
   after((done) => {
-    async.parallel([
+    parallel([
       (cb) => selfNode.stop(cb),
       (cb) => delegatedNode.stop(cb),
       (cb) => bootstrapNode.stop(cb)
@@ -123,8 +126,16 @@ describe('DelegatedContentRouting', function () {
   })
 
   describe('findProviders', () => {
+    const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
+    before('register providers', (done) => {
+      parallel([
+        (cb) => bootstrapNode.api.dht.provide(cid, cb),
+        (cb) => selfNode.api.dht.provide(cid, cb)
+      ], done)
+    })
+
     it('should be able to find providers through the delegate node', function (done) {
-      async.waterfall([
+      waterfall([
         (cb) => {
           const opts = delegatedNode.apiAddr.toOptions()
           const routing = new DelegatedContentRouting(selfId, {
@@ -132,7 +143,6 @@ describe('DelegatedContentRouting', function () {
             port: opts.port,
             host: opts.host
           })
-          const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
           routing.findProviders(cid, cb)
         },
         (providers, cb) => {
@@ -149,7 +159,7 @@ describe('DelegatedContentRouting', function () {
     })
 
     it('should be able to specify a maxTimeout', function (done) {
-      async.waterfall([
+      waterfall([
         (cb) => {
           const opts = delegatedNode.apiAddr.toOptions()
           const routing = new DelegatedContentRouting(selfId, {
@@ -179,7 +189,7 @@ describe('DelegatedContentRouting', function () {
       let contentRouter
       let cid
 
-      async.waterfall([
+      waterfall([
         (cb) => {
           const opts = delegatedNode.apiAddr.toOptions()
           contentRouter = new DelegatedContentRouting(selfId, {
@@ -195,18 +205,16 @@ describe('DelegatedContentRouting', function () {
           contentRouter.provide(cid, cb)
         },
         (cb) => {
-          delegatedNode.api.dht.findProvs(cid.toString(), cb)
+          delegatedNode.api.dht.findProvs(cid, cb)
         },
-        (provs, cb) => {
-          let providers = []
-          provs.filter((res) => Boolean(res.Responses)).forEach((res) => {
-            providers = providers.concat(res.Responses)
-          })
-
-          // We are hosting the file, validate we're the provider
-          const res = providers.find((prov) => prov.ID === selfId.toB58String())
-          expect(res.ID).to.equal(selfId.toB58String())
-
+        (providers, cb) => {
+          const providerIds = providers.map(p => p.id.toB58String())
+          // Us and the delegate should be providers
+          expect(providers).to.have.length(2)
+          expect(providerIds).to.have.members([
+            selfId.toB58String(),
+            delegatedId.toB58String()
+          ])
           cb()
         }
       ], done)
