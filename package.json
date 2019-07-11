@@ -1,6 +1,6 @@
 {
   "name": "libp2p-delegated-content-routing",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Leverage other peers in the libp2p network to perform Content Routing calls.",
   "leadMaintainer": "Jacob Heun <jacobheun@gmail.com>",
   "main": "src/index.js",
@@ -32,6 +32,7 @@
     "peer-info": "^0.15.1"
   },
   "contributors": [
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "David Dias <daviddias.p@gmail.com>",
     "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
     "Jacob Heun <jacobheun@gmail.com>"
