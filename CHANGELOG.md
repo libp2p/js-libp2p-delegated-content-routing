@@ -1,3 +1,18 @@
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.2.3...v0.3.0) (2019-07-12)
+
+
+### Features
+
+* refactor to use async/await ([#7](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/7)) ([0e2d91f](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/0e2d91f))
+
+
+### BREAKING CHANGES
+
+* API refactored to use async/await
+
+
+
 <a name="0.2.3"></a>
 ## [0.2.3](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.2.2...v0.2.3) (2019-07-11)
 
