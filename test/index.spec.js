@@ -3,22 +3,17 @@
 
 const expect = require('chai').expect
 const IPFSFactory = require('ipfsd-ctl')
-const parallel = require('async/parallel')
-const waterfall = require('async/waterfall')
 const CID = require('cids')
 const PeerId = require('peer-id')
-
-const factory = IPFSFactory.create({ type: 'go' })
+const all = require('async-iterator-all')
+const factory = IPFSFactory.create({
+  type: 'go'
+})
 
 const DelegatedContentRouting = require('../src')
 
-function spawnNode (bootstrap, callback) {
-  if (typeof bootstrap === 'function') {
-    callback = bootstrap
-    bootstrap = []
-  }
-
-  factory.spawn({
+async function spawnNode (bootstrap = []) {
+  const node = await factory.spawn({
     // Lock down the nodes so testing can be deterministic
     config: {
       Bootstrap: bootstrap,
@@ -28,15 +23,14 @@ function spawnNode (bootstrap, callback) {
         }
       }
     }
-  }, (err, node) => {
-    if (err) return callback(err)
-
-    node.api.id((err, id) => {
-      if (err) return callback(err)
-
-      callback(null, node, id)
-    })
   })
+
+  const id = await node.api.id()
+
+  return {
+    node,
+    id
+  }
 }
 
 describe('DelegatedContentRouting', function () {
@@ -44,43 +38,32 @@ describe('DelegatedContentRouting', function () {
 
   let selfNode
   let selfId
-  let delegatedNode
-  let delegatedId
+  let delegateNode
   let bootstrapNode
   let bootstrapId
 
-  before((done) => {
-    waterfall([
-      // Spawn a "bootstrap" node that doesnt connect to anything
-      (cb) => spawnNode(cb),
-      (ipfsd, id, cb) => {
-        bootstrapNode = ipfsd
-        bootstrapId = id
-        cb()
-      },
-      // Spawn our local node and bootstrap the bootstrapper node
-      (cb) => spawnNode(bootstrapId.addresses, cb),
-      (ipfsd, id, cb) => {
-        selfNode = ipfsd
-        selfId = PeerId.createFromB58String(id.id)
-        cb()
-      },
-      // Spawn the delegate node and bootstrap the bootstrapper node
-      (cb) => spawnNode(bootstrapId.addresses, cb),
-      (ipfsd, id, cb) => {
-        delegatedNode = ipfsd
-        delegatedId = PeerId.createFromB58String(id.id)
-        cb()
-      }
-    ], done)
+  before(async () => {
+    // Spawn a "Boostrap" node that doesnt connect to anything
+    const bootstrap = await spawnNode()
+    bootstrapNode = bootstrap.node
+    bootstrapId = bootstrap.id
+
+    // Spawn our local node and bootstrap the bootstrapper node
+    const self = await spawnNode(bootstrapId.addresses)
+    selfNode = self.node
+    selfId = PeerId.createFromB58String(self.id.id)
+
+    // Spawn the delegate node and bootstrap the bootstrapper node
+    const delegate = await spawnNode(bootstrapId.addresses)
+    delegateNode = delegate.node
   })
 
-  after((done) => {
-    parallel([
-      (cb) => selfNode.stop(cb),
-      (cb) => delegatedNode.stop(cb),
-      (cb) => bootstrapNode.stop(cb)
-    ], done)
+  after(() => {
+    return Promise.all([
+      selfNode.stop(),
+      delegateNode.stop(),
+      bootstrapNode.stop()
+    ])
   })
 
   describe('create', () => {
@@ -127,96 +110,62 @@ describe('DelegatedContentRouting', function () {
 
   describe('findProviders', () => {
     const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
-    before('register providers', (done) => {
-      parallel([
-        (cb) => bootstrapNode.api.dht.provide(cid, cb),
-        (cb) => selfNode.api.dht.provide(cid, cb)
-      ], done)
+
+    before('register providers', async () => {
+      await bootstrapNode.api.dht.provide(cid)
+      await selfNode.api.dht.provide(cid)
     })
 
-    it('should be able to find providers through the delegate node', function (done) {
-      waterfall([
-        (cb) => {
-          const opts = delegatedNode.apiAddr.toOptions()
-          const routing = new DelegatedContentRouting(selfId, {
-            protocol: 'http',
-            port: opts.port,
-            host: opts.host
-          })
-          routing.findProviders(cid, cb)
-        },
-        (providers, cb) => {
-          // We should get our local node and the bootstrap node as providers.
-          // The delegate node is not included, because it is handling the requests
-          expect(providers).to.have.length(2)
-          expect(providers.map((p) => p.id.toB58String())).to.have.members([
-            bootstrapId.id,
-            selfId.toB58String()
-          ])
-          cb()
-        }
-      ], done)
+    it('should be able to find providers through the delegate node', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const routing = new DelegatedContentRouting(selfId, {
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      })
+
+      const providers = await all(routing.findProviders(cid))
+
+      // We should get the bootstrap node as provider
+      // The delegate node is not included, because it is handling the requests
+      expect(providers.map((p) => p.id.toB58String())).to.include(bootstrapId.id, 'Did not include bootstrap node')
+      expect(providers.map((p) => p.id.toB58String())).to.include(selfId.toB58String(), 'Did not include self node')
     })
 
-    it('should be able to specify a maxTimeout', function (done) {
-      waterfall([
-        (cb) => {
-          const opts = delegatedNode.apiAddr.toOptions()
-          const routing = new DelegatedContentRouting(selfId, {
-            protocol: 'http',
-            port: opts.port,
-            host: opts.host
-          })
-          const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
-          routing.findProviders(cid, { maxTimeout: 5e3 }, cb)
-        },
-        (providers, cb) => {
-          // We should get our local node and the bootstrap node as providers.
-          // The delegate node is not included, because it is handling the requests
-          expect(providers).to.have.length(2)
-          expect(providers.map((p) => p.id.toB58String())).to.have.members([
-            bootstrapId.id,
-            selfId.toB58String()
-          ])
-          cb()
-        }
-      ], done)
+    it('should be able to specify a maxTimeout', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const routing = new DelegatedContentRouting(selfId, {
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      })
+
+      const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
+      const providers = await all(routing.findProviders(cid, { maxTimeout: 5e3 }))
+
+      expect(providers.map((p) => p.id.toB58String())).to.include(bootstrapId.id, 'Did not include bootstrap node')
     })
   })
 
   describe('provide', () => {
-    it('should be able to register as a content provider to the delegate node', function (done) {
+    it('should be able to register as a content provider to the delegate node', async () => {
       let contentRouter
       let cid
 
-      waterfall([
-        (cb) => {
-          const opts = delegatedNode.apiAddr.toOptions()
-          contentRouter = new DelegatedContentRouting(selfId, {
-            protocol: 'http',
-            port: opts.port,
-            host: opts.host
-          })
+      const opts = delegateNode.apiAddr.toOptions()
+      contentRouter = new DelegatedContentRouting(selfId, {
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      })
 
-          selfNode.api.add(Buffer.from(`hello-${Math.random()}`), cb)
-        },
-        (res, cb) => {
-          cid = new CID(res[0].hash)
-          contentRouter.provide(cid, cb)
-        },
-        (cb) => {
-          delegatedNode.api.dht.findProvs(cid, cb)
-        },
-        (providers, cb) => {
-          const providerIds = providers.map(p => p.id.toB58String())
-          // The delegate should be a provider
-          expect(providerIds).to.have.members([
-            selfId.toB58String(),
-            delegatedId.toB58String()
-          ])
-          cb()
-        }
-      ], done)
+      const res = await selfNode.api.add(Buffer.from(`hello-${Math.random()}`))
+      cid = new CID(res[0].hash)
+      await contentRouter.provide(cid)
+      const providers = await delegateNode.api.dht.findProvs(cid.toBaseEncodedString())
+
+      // We are hosting the file, validate we're the provider
+      expect(providers.map((p) => p.id.toB58String())).to.include(selfId.toB58String(), 'Did not include self node')
     })
   })
 })

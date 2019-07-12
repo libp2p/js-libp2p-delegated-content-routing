@@ -4,9 +4,6 @@ const dht = require('ipfs-http-client/src/dht')
 const swarm = require('ipfs-http-client/src/swarm')
 const refs = require('ipfs-http-client/src/files-regular/refs')
 const defaultConfig = require('ipfs-http-client/src/utils/default-config')
-const series = require('async/series')
-const parallel = require('async/parallel')
-const reflect = require('async/reflect')
 const multiaddr = require('multiaddr')
 
 const DEFAULT_MAX_TIMEOUT = 30e3 // 30 second default
@@ -60,26 +57,18 @@ class DelegatedContentRouting {
    * @param {CID} key
    * @param {object} options
    * @param {number} options.maxTimeout How long the query can take. Defaults to 30 seconds
-   * @param {function(Error, Array<PeerInfo>)} callback
-   * @returns {void}
+   * @returns {AsyncIterable<PeerInfo>}
    */
-  findProviders (key, options, callback) {
-    if (typeof options === 'function') {
-      callback = options
-      options = {}
-    } else if (typeof options === 'number') { // This will be deprecated in a next release
-      options = {
-        maxTimeout: options
-      }
-    } else {
-      options = options || {}
-    }
-
+  async * findProviders (key, options = {}) {
     options.maxTimeout = options.maxTimeout || DEFAULT_MAX_TIMEOUT
 
-    this.dht.findProvs(key.toString(), {
+    const results = await this.dht.findProvs(key, {
       timeout: `${options.maxTimeout}ms` // The api requires specification of the time unit (s/ms)
-    }, callback)
+    })
+
+    for (let i = 0; i < results.length; i++) {
+      yield results[i]
+    }
   }
 
   /**
@@ -91,32 +80,29 @@ class DelegatedContentRouting {
    *
    * @param {CID} key
    * @param {function(Error)} callback
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  provide (key, callback) {
+  async provide (key) {
     const addrs = this.bootstrappers.map((addr) => {
       return addr.encapsulate(`/p2p-circuit/ipfs/${this.peerId.toB58String()}`)
     })
 
-    series([
-      (cb) => parallel(addrs.map((addr) => {
-        return reflect((cb) => this.swarm.connect(addr.toString(), cb))
-      }), (err, results) => {
-        if (err) {
-          return cb(err)
-        }
+    const results = await Promise.all(
+      addrs.map((addr) => {
+        return this.swarm.connect(addr.toString()).catch(() => {})
+      })
+    )
 
-        // only some need to succeed
-        const success = results.filter((res) => res.error == null)
-        if (success.length === 0) {
-          return cb(new Error('unable to swarm.connect using p2p-circuit'))
-        }
-        cb()
-      }),
-      (cb) => {
-        this.refs(key.toString(), { recursive: true }, cb)
-      }
-    ], (err) => callback(err))
+    // only some need to succeed
+    const success = results.filter((res) => res && res.error == null)
+
+    if (success.length === 0) {
+      throw new Error('unable to swarm.connect using p2p-circuit')
+    }
+
+    this.refs(key.toBaseEncodedString(), {
+      recursive: true
+    })
   }
 }
 
