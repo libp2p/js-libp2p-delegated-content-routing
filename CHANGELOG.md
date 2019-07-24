@@ -1,3 +1,13 @@
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.3.0...v0.3.1) (2019-07-24)
+
+
+### Bug Fixes
+
+* limit concurrent HTTP requests ([#16](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/16)) ([55d6108](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/55d6108)), closes [#12](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/12) [/github.com/libp2p/js-libp2p-delegated-content-routing/issues/12#issuecomment-514591525](https://github.com//github.com/libp2p/js-libp2p-delegated-content-routing/issues/12/issues/issuecomment-514591525)
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.2.3...v0.3.0) (2019-07-12)
 
