@@ -1,11 +1,9 @@
 'use strict'
 
 const dht = require('ipfs-http-client/src/dht')
-const swarm = require('ipfs-http-client/src/swarm')
 const refs = require('ipfs-http-client/src/files-regular/refs')
 const defaultConfig = require('ipfs-http-client/src/utils/default-config')
 const { default: PQueue } = require('p-queue')
-const pMemoize = require('p-memoize')
 const debug = require('debug')
 
 const log = debug('libp2p-delegated-content-routing')
@@ -19,7 +17,6 @@ const DEFAULT_IPFS_API = {
 }
 
 const CONCURRENT_HTTP_REQUESTS = 4
-const SWARM_CONNECT_MAX_AGE = 60e3
 
 /**
  * An implementation of content routing, using a delegated peer.
@@ -38,9 +35,6 @@ class DelegatedContentRouting {
 
     this.api = Object.assign({}, defaultConfig(), DEFAULT_IPFS_API, api)
     this.dht = dht(this.api)
-    this.swarm = swarm(this.api)
-    // optimization: avoid calling swarm.connect too often
-    this.swarm.connect = pMemoize(this.swarm.connect, { maxAge: SWARM_CONNECT_MAX_AGE })
     this.refs = refs(this.api)
     this.peerId = peerId
 
