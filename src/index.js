@@ -85,8 +85,8 @@ class DelegatedContentRouting {
     this._httpQueue.add(() =>
       this.dht.findProvs(key.toString(), {
         timeout: `${options.maxTimeout}ms` // The api requires specification of the time unit (s/ms)
-      }, callback)
-    ).catch(callback)
+      })
+    ).then(res => callback(null, res), callback)
   }
 
   /**
@@ -102,7 +102,7 @@ class DelegatedContentRouting {
    */
   provide (key, callback) {
     this._httpQueueRefs.add(() =>
-      this.refs(key.toString(), { recursive: false }, (err, res) => callback(err))
+      this.refs(key.toString(), { recursive: false }, (err) => callback(err))
     ).catch(callback)
   }
 }
