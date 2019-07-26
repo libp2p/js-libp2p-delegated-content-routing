@@ -4,16 +4,14 @@ const dht = require('ipfs-http-client/src/dht')
 const swarm = require('ipfs-http-client/src/swarm')
 const refs = require('ipfs-http-client/src/files-regular/refs')
 const defaultConfig = require('ipfs-http-client/src/utils/default-config')
-const series = require('async/series')
-const parallel = require('async/parallel')
-const reflect = require('async/reflect')
 const multiaddr = require('multiaddr')
+const { default: PQueue } = require('p-queue')
 
 const DEFAULT_MAX_TIMEOUT = 30e3 // 30 second default
 const DEFAULT_IPFS_API = {
   protocol: 'https',
   port: 443,
-  host: 'ipfs.io'
+  host: 'node0.delegate.ipfs.io'
 }
 
 const DEFAULT_BOOSTRAP_NODES = [
@@ -50,6 +48,13 @@ class DelegatedContentRouting {
 
     this.peerId = peerId
     this.bootstrappers = bootstrappers || DEFAULT_BOOSTRAP_NODES.map((addr) => multiaddr(addr))
+
+    // limit concurrency to avoid request flood in web browser
+    // (backport of: https://github.com/libp2p/js-libp2p-delegated-content-routing/pull/16/)
+    this._httpQueue = new PQueue({ concurrency: 4 })
+    // sometimes refs requests take long time, they need separate queue
+    // to not suffocate regular bussiness
+    this._httpQueueRefs = new PQueue({ concurrency: 2 })
   }
 
   /**
@@ -77,46 +82,28 @@ class DelegatedContentRouting {
 
     options.maxTimeout = options.maxTimeout || DEFAULT_MAX_TIMEOUT
 
-    this.dht.findProvs(key.toString(), {
-      timeout: `${options.maxTimeout}ms` // The api requires specification of the time unit (s/ms)
-    }, callback)
+    this._httpQueue.add(() =>
+      this.dht.findProvs(key.toString(), {
+        timeout: `${options.maxTimeout}ms` // The api requires specification of the time unit (s/ms)
+      }, callback)
+    ).catch(callback)
   }
 
   /**
    * Announce to the network that the delegated node can provide the given key.
    *
    * Currently this uses the following hack
-   * - call swarm.connect on the delegated node to us, to ensure we are connected
-   * - call refs --recursive on the delegated node, so it fetches the content
+   * - delegate is one of bootstrap nodes, so we are always connected to it
+   * - call refs on the delegated node, so it fetches the content
    *
    * @param {CID} key
    * @param {function(Error)} callback
    * @returns {void}
    */
   provide (key, callback) {
-    const addrs = this.bootstrappers.map((addr) => {
-      return addr.encapsulate(`/p2p-circuit/ipfs/${this.peerId.toB58String()}`)
-    })
-
-    series([
-      (cb) => parallel(addrs.map((addr) => {
-        return reflect((cb) => this.swarm.connect(addr.toString(), cb))
-      }), (err, results) => {
-        if (err) {
-          return cb(err)
-        }
-
-        // only some need to succeed
-        const success = results.filter((res) => res.error == null)
-        if (success.length === 0) {
-          return cb(new Error('unable to swarm.connect using p2p-circuit'))
-        }
-        cb()
-      }),
-      (cb) => {
-        this.refs(key.toString(), { recursive: true }, cb)
-      }
-    ], (err) => callback(err))
+    this._httpQueueRefs.add(() =>
+      this.refs(key.toString(), { recursive: false }, (err, res) => callback(err))
+    ).catch(callback)
   }
 }
 
