@@ -102,8 +102,8 @@ class DelegatedContentRouting {
    */
   provide (key, callback) {
     this._httpQueueRefs.add(() =>
-      this.refs(key.toString(), { recursive: false }, (err) => callback(err))
-    ).catch(callback)
+      this.refs(key.toString(), { recursive: false })
+    ).then(() => callback(), callback)
   }
 }
 
