@@ -1,15 +1,15 @@
 'use strict'
 
 const dht = require('ipfs-http-client/src/dht')
-const refs = require('ipfs-http-client/src/files-regular/refs')
-const defaultConfig = require('ipfs-http-client/src/utils/default-config')
+const refs = require('ipfs-http-client/src/refs')
+const getEndpointConfig = require('ipfs-http-client/src/get-endpoint-config')
 const { default: PQueue } = require('p-queue')
 const debug = require('debug')
 
 const log = debug('libp2p-delegated-content-routing')
 log.error = debug('libp2p-delegated-content-routing:error')
 
-const DEFAULT_MAX_TIMEOUT = 30e3 // 30 second default
+const DEFAULT_TIMEOUT = 30e3 // 30 second default
 const DEFAULT_IPFS_API = {
   protocol: 'https',
   port: 443,
@@ -33,7 +33,7 @@ class DelegatedContentRouting {
       throw new Error('missing self peerId')
     }
 
-    this.api = Object.assign({}, defaultConfig(), DEFAULT_IPFS_API, api)
+    this.api = Object.assign({}, getEndpointConfig()(), DEFAULT_IPFS_API, api)
     this.dht = dht(this.api)
     this.refs = refs(this.api)
     this.peerId = peerId
@@ -57,16 +57,16 @@ class DelegatedContentRouting {
    *
    * @param {CID} key
    * @param {object} options
-   * @param {number} options.maxTimeout How long the query can take. Defaults to 30 seconds
+   * @param {number} options.timeout How long the query can take. Defaults to 30 seconds
    * @returns {AsyncIterable<PeerInfo>}
    */
   async * findProviders (key, options = {}) {
     const keyString = key.toBaseEncodedString()
     log('findProviders starts: ' + keyString)
-    options.maxTimeout = options.maxTimeout || DEFAULT_MAX_TIMEOUT
+    options.timeout = options.timeout || DEFAULT_TIMEOUT
 
     const results = await this._httpQueue.add(() => this.dht.findProvs(key, {
-      timeout: `${options.maxTimeout}ms` // The api requires specification of the time unit (s/ms)
+      timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
     }))
 
     for (let i = 0; i < results.length; i++) {

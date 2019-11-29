@@ -18,19 +18,19 @@
     "coverage": "aegir coverage"
   },
   "devDependencies": {
-    "aegir": "^19.0.5",
+    "aegir": "^20.4.1",
     "async-iterator-all": "^1.0.0",
     "chai": "^4.2.0",
     "cids": "^0.7.1",
-    "go-ipfs-dep": "~0.4.17",
-    "ipfsd-ctl": "~0.44.1",
-    "peer-id": "~0.13.1"
+    "go-ipfs-dep": "~0.4.22",
+    "ipfsd-ctl": "~0.47.4",
+    "peer-id": "~0.13.5"
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "ipfs-http-client": "^33.1.0",
-    "multiaddr": "^6.1.0",
-    "p-queue": "^6.1.0"
+    "ipfs-http-client": "^40.0.1",
+    "multiaddr": "^7.2.1",
+    "p-queue": "^6.2.1"
   },
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",
