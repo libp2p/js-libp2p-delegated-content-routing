@@ -75,7 +75,7 @@ describe('DelegatedContentRouting', function () {
       const router = new DelegatedContentRouting(selfId)
 
       expect(router.api).to.include({
-        'api-path': '/api/v0/',
+        'api-path': '/api/v0',
         protocol: 'https',
         port: 443,
         host: 'node0.delegate.ipfs.io'
@@ -88,7 +88,7 @@ describe('DelegatedContentRouting', function () {
       })
 
       expect(router.api).to.include({
-        'api-path': '/api/v0/',
+        'api-path': '/api/v0',
         protocol: 'https',
         port: 443,
         host: 'other.ipfs.io'
@@ -97,7 +97,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should allow for overriding the api', () => {
       const api = {
-        'api-path': '/api/v1/',
+        'api-path': '/api/v1',
         protocol: 'http',
         port: 8000,
         host: 'localhost'
@@ -132,7 +132,7 @@ describe('DelegatedContentRouting', function () {
       expect(providers.map((p) => p.id.toB58String())).to.include(selfId.toB58String(), 'Did not include self node')
     })
 
-    it('should be able to specify a maxTimeout', async () => {
+    it('should be able to specify a timeout', async () => {
       const opts = delegateNode.apiAddr.toOptions()
       const routing = new DelegatedContentRouting(selfId, {
         protocol: 'http',
@@ -141,7 +141,7 @@ describe('DelegatedContentRouting', function () {
       })
 
       const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
-      const providers = await all(routing.findProviders(cid, { maxTimeout: 5e3 }))
+      const providers = await all(routing.findProviders(cid, { timeout: 5e3 }))
 
       expect(providers.map((p) => p.id.toB58String())).to.include(bootstrapId.id, 'Did not include bootstrap node')
     })
@@ -149,18 +149,15 @@ describe('DelegatedContentRouting', function () {
 
   describe('provide', () => {
     it('should be able to register as a content provider to the delegate node', async () => {
-      let contentRouter
-      let cid
-
       const opts = delegateNode.apiAddr.toOptions()
-      contentRouter = new DelegatedContentRouting(selfId, {
+      const contentRouter = new DelegatedContentRouting(selfId, {
         protocol: 'http',
         port: opts.port,
         host: opts.host
       })
 
       const res = await selfNode.api.add(Buffer.from(`hello-${Math.random()}`))
-      cid = new CID(res[0].hash)
+      const cid = new CID(res[0].hash)
       await contentRouter.provide(cid)
       const providers = await delegateNode.api.dht.findProvs(cid.toBaseEncodedString())
 
