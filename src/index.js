@@ -1,10 +1,13 @@
 'use strict'
 
+const debug = require('debug')
+
 const dht = require('ipfs-http-client/src/dht')
 const refs = require('ipfs-http-client/src/refs')
 const getEndpointConfig = require('ipfs-http-client/src/get-endpoint-config')
+
 const { default: PQueue } = require('p-queue')
-const debug = require('debug')
+const all = require('async-iterator-all')
 
 const log = debug('libp2p-delegated-content-routing')
 log.error = debug('libp2p-delegated-content-routing:error')
@@ -89,10 +92,10 @@ class DelegatedContentRouting {
   async provide (key) {
     const keyString = key.toBaseEncodedString()
     log('provide starts: ' + keyString)
-    await this._httpQueueRefs.add(() =>
-      this.refs(keyString, { recursive: false })
+    const results = await this._httpQueueRefs.add(() =>
+      all(this.refs(keyString, { recursive: false }))
     )
-    log('provide finished: ' + keyString)
+    log('provide finished: ', keyString, results)
   }
 }
 

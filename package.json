@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "aegir": "^20.4.1",
-    "async-iterator-all": "^1.0.0",
     "chai": "^4.2.0",
     "cids": "^0.7.1",
     "go-ipfs-dep": "~0.4.22",
@@ -27,6 +26,7 @@
     "peer-id": "~0.13.5"
   },
   "dependencies": {
+    "async-iterator-all": "^1.0.0",
     "debug": "^4.1.1",
     "ipfs-http-client": "^40.0.1",
     "multiaddr": "^7.2.1",
