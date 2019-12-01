@@ -92,10 +92,10 @@ class DelegatedContentRouting {
   async provide (key) {
     const keyString = key.toBaseEncodedString()
     log('provide starts: ' + keyString)
-    await this._httpQueueRefs.add(() =>
+    const results = await this._httpQueueRefs.add(() =>
       all(this.refs(keyString, { recursive: false }))
     )
-    log('provide finished: ' + keyString)
+    log('provide finished: ', keyString, results)
   }
 }
 
