@@ -1,3 +1,13 @@
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.4.0...v0.4.1) (2019-12-01)
+
+
+### Bug Fixes
+
+* async it refs ([#19](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/19)) ([b2690c7](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/b2690c7))
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.3.1...v0.4.0) (2019-11-29)
 
