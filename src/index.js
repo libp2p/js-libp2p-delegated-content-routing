@@ -3,6 +3,8 @@
 const dht = require('ipfs-http-client/src/dht')
 const refs = require('ipfs-http-client/src/files-regular/refs')
 const defaultConfig = require('ipfs-http-client/src/utils/default-config')
+
+const all = require('async-iterator-all')
 const { default: PQueue } = require('p-queue')
 const debug = require('debug')
 
@@ -90,7 +92,7 @@ class DelegatedContentRouting {
     const keyString = key.toBaseEncodedString()
     log('provide starts: ' + keyString)
     await this._httpQueueRefs.add(() =>
-      this.refs(keyString, { recursive: false })
+      all(this.refs(keyString, { recursive: false }))
     )
     log('provide finished: ' + keyString)
   }
