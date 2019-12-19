@@ -7,7 +7,7 @@ const refs = require('ipfs-http-client/src/refs')
 const getEndpointConfig = require('ipfs-http-client/src/get-endpoint-config')
 
 const { default: PQueue } = require('p-queue')
-const all = require('async-iterator-all')
+const all = require('it-all')
 
 const log = debug('libp2p-delegated-content-routing')
 log.error = debug('libp2p-delegated-content-routing:error')
