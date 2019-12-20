@@ -5,7 +5,7 @@ const expect = require('chai').expect
 const IPFSFactory = require('ipfsd-ctl')
 const CID = require('cids')
 const PeerId = require('peer-id')
-const all = require('async-iterator-all')
+const all = require('it-all')
 const factory = IPFSFactory.create({
   type: 'go'
 })
