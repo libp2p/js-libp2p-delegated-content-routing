@@ -10,6 +10,8 @@
 
 Leverage other peers in the network to perform Content Routing calls.
 
+Requires access to `/api/v0/dht/findprovs` and `/api/v0/refs` HTTP API endpoints of the delegate node.
+
 ## Lead Maintainer
 
 [Jacob Heun](https://github.com/jacobheun)
