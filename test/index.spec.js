@@ -6,8 +6,9 @@ const IPFSFactory = require('ipfsd-ctl')
 const CID = require('cids')
 const PeerId = require('peer-id')
 const all = require('it-all')
-const factory = IPFSFactory.create({
-  type: 'go'
+const factory = IPFSFactory.createFactory({
+  type: 'go',
+  test: true
 })
 
 const DelegatedContentRouting = require('../src')
@@ -15,11 +16,13 @@ const DelegatedContentRouting = require('../src')
 async function spawnNode (bootstrap = []) {
   const node = await factory.spawn({
     // Lock down the nodes so testing can be deterministic
-    config: {
-      Bootstrap: bootstrap,
-      Discovery: {
-        MDNS: {
-          Enabled: false
+    ipfsOptions: {
+      config: {
+        Bootstrap: bootstrap,
+        Discovery: {
+          MDNS: {
+            Enabled: false
+          }
         }
       }
     }

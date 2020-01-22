@@ -21,14 +21,14 @@
     "aegir": "^20.4.1",
     "chai": "^4.2.0",
     "cids": "^0.7.1",
-    "go-ipfs-dep": "~0.4.22",
-    "ipfsd-ctl": "~0.47.4",
-    "peer-id": "~0.13.5"
+    "go-ipfs-dep": "^0.4.22",
+    "ipfsd-ctl": "^1.0.6",
+    "peer-id": "^0.13.5"
   },
   "dependencies": {
     "it-all": "^1.0.0",
     "debug": "^4.1.1",
-    "ipfs-http-client": "^40.0.1",
+    "ipfs-http-client": "github:ipfs/js-ipfs-http-client#refactor/async-iterables2",
     "multiaddr": "^7.2.1",
     "p-queue": "^6.2.1"
   },
