@@ -1,13 +1,14 @@
 'use strict'
 
 const debug = require('debug')
-
-const dht = require('ipfs-http-client/src/dht')
-const refs = require('ipfs-http-client/src/refs')
-const getEndpointConfig = require('ipfs-http-client/src/get-endpoint-config')
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
+const createFindProvs = require('ipfs-http-client/src/dht/find-provs')
+const createRefs = require('ipfs-http-client/src/refs')
 
 const { default: PQueue } = require('p-queue')
 const all = require('it-all')
+const defer = require('p-defer')
 
 const log = debug('libp2p-delegated-content-routing')
 log.error = debug('libp2p-delegated-content-routing:error')
@@ -36,9 +37,9 @@ class DelegatedContentRouting {
       throw new Error('missing self peerId')
     }
 
-    this.api = Object.assign({}, getEndpointConfig()(), DEFAULT_IPFS_API, api)
-    this.dht = dht(this.api)
-    this.refs = refs(this.api)
+    this.api = Object.assign({}, DEFAULT_IPFS_API, api)
+    this.dht = { findProvs: createFindProvs(this.api) }
+    this.refs = createRefs(this.api)
     this.peerId = peerId
 
     // limit concurrency to avoid request flood in web browser
@@ -64,18 +65,34 @@ class DelegatedContentRouting {
    * @returns {AsyncIterable<PeerInfo>}
    */
   async * findProviders (key, options = {}) {
-    const keyString = key.toBaseEncodedString()
-    log('findProviders starts: ' + keyString)
+    const keyString = `${key}`
+    log('findProviders starts:', keyString)
     options.timeout = options.timeout || DEFAULT_TIMEOUT
 
-    const results = await this._httpQueue.add(() => this.dht.findProvs(key, {
-      timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
-    }))
+    const onStart = defer()
+    const onFinish = defer()
 
-    for (let i = 0; i < results.length; i++) {
-      yield results[i]
+    this._httpQueue.add(() => {
+      onStart.resolve()
+      return onFinish.promise
+    })
+
+    try {
+      await onStart.promise
+
+      const providers = this.dht.findProvs(key, {
+        timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
+      })
+
+      for await (const { id, addrs } of providers) {
+        const peerInfo = new PeerInfo(PeerId.createFromCID(id))
+        addrs.forEach(addr => peerInfo.multiaddrs.add(addr))
+        yield peerInfo
+      }
+    } finally {
+      onFinish.resolve()
+      log('findProviders finished:', keyString)
     }
-    log('findProviders finished: ' + keyString)
   }
 
   /**
@@ -90,12 +107,12 @@ class DelegatedContentRouting {
    * @returns {Promise<void>}
    */
   async provide (key) {
-    const keyString = key.toBaseEncodedString()
-    log('provide starts: ' + keyString)
+    const keyString = `${key}`
+    log('provide starts:', keyString)
     const results = await this._httpQueueRefs.add(() =>
       all(this.refs(keyString, { recursive: false }))
     )
-    log('provide finished: ', keyString, results)
+    log('provide finished:', keyString, results)
   }
 }
 
