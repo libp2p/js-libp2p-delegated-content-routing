@@ -75,7 +75,6 @@ describe('DelegatedContentRouting', function () {
       const router = new DelegatedContentRouting(selfId)
 
       expect(router.api).to.include({
-        'api-path': '/api/v0',
         protocol: 'https',
         port: 443,
         host: 'node0.delegate.ipfs.io'
@@ -88,7 +87,6 @@ describe('DelegatedContentRouting', function () {
       })
 
       expect(router.api).to.include({
-        'api-path': '/api/v0',
         protocol: 'https',
         port: 443,
         host: 'other.ipfs.io'
@@ -97,7 +95,6 @@ describe('DelegatedContentRouting', function () {
 
     it('should allow for overriding the api', () => {
       const api = {
-        'api-path': '/api/v1',
         protocol: 'http',
         port: 8000,
         host: 'localhost'
