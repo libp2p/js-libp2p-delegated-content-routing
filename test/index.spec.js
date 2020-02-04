@@ -75,7 +75,6 @@ describe('DelegatedContentRouting', function () {
       const router = new DelegatedContentRouting(selfId)
 
       expect(router.api).to.include({
-        'api-path': '/api/v0',
         protocol: 'https',
         port: 443,
         host: 'node0.delegate.ipfs.io'
@@ -88,7 +87,6 @@ describe('DelegatedContentRouting', function () {
       })
 
       expect(router.api).to.include({
-        'api-path': '/api/v0',
         protocol: 'https',
         port: 443,
         host: 'other.ipfs.io'
@@ -97,7 +95,6 @@ describe('DelegatedContentRouting', function () {
 
     it('should allow for overriding the api', () => {
       const api = {
-        'api-path': '/api/v1',
         protocol: 'http',
         port: 8000,
         host: 'localhost'
@@ -124,7 +121,7 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       })
 
-      const providers = await all(routing.findProviders(cid))
+      const providers = await all(routing.findProviders(cid, { numProviders: 2 }))
 
       // We should get the bootstrap node as provider
       // The delegate node is not included, because it is handling the requests
@@ -141,7 +138,7 @@ describe('DelegatedContentRouting', function () {
       })
 
       const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
-      const providers = await all(routing.findProviders(cid, { timeout: 5e3 }))
+      const providers = await all(routing.findProviders(cid, { numProviders: 2, timeout: 5e3 }))
 
       expect(providers.map((p) => p.id.toB58String())).to.include(bootstrapId.id, 'Did not include bootstrap node')
     })

@@ -21,16 +21,18 @@
     "aegir": "^20.4.1",
     "chai": "^4.2.0",
     "cids": "^0.7.1",
-    "go-ipfs-dep": "~0.4.22",
+    "go-ipfs-dep": "^0.4.23",
     "ipfsd-ctl": "~0.47.4",
-    "peer-id": "~0.13.5"
+    "peer-id": "^0.13.7"
   },
   "dependencies": {
-    "it-all": "^1.0.0",
     "debug": "^4.1.1",
-    "ipfs-http-client": "^40.0.1",
+    "ipfs-http-client": "^42.0.0",
+    "it-all": "^1.0.0",
     "multiaddr": "^7.2.1",
-    "p-queue": "^6.2.1"
+    "p-defer": "^3.0.0",
+    "p-queue": "^6.2.1",
+    "peer-info": "^0.17.1"
   },
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",
