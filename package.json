@@ -22,7 +22,7 @@
     "chai": "^4.2.0",
     "cids": "^0.7.1",
     "go-ipfs-dep": "^0.4.23",
-    "ipfsd-ctl": "~0.47.4",
+    "ipfsd-ctl": "~1.0.7",
     "peer-id": "^0.13.7"
   },
   "dependencies": {
