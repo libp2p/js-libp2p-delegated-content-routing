@@ -81,6 +81,7 @@ class DelegatedContentRouting {
       await onStart.promise
 
       const providers = this.dht.findProvs(key, {
+        numProviders: options.numProviders,
         timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
       })
 
