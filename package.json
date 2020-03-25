@@ -20,7 +20,7 @@
   "devDependencies": {
     "aegir": "^21.0.2",
     "chai": "^4.2.0",
-    "cids": "^0.7.1",
+    "cids": "^0.8.0",
     "go-ipfs-dep": "^0.4.23",
     "ipfsd-ctl": "~0.47.4",
     "peer-id": "^0.13.7"
