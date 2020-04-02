@@ -2,12 +2,19 @@
 'use strict'
 
 const expect = require('chai').expect
-const IPFSFactory = require('ipfsd-ctl')
+const { createFactory } = require('ipfsd-ctl')
 const CID = require('cids')
 const PeerId = require('peer-id')
 const all = require('it-all')
-const factory = IPFSFactory.create({
-  type: 'go'
+const last = require('it-last')
+const drain = require('it-drain')
+const { isNode } = require('ipfs-utils/src/env')
+const factory = createFactory({
+  type: 'go',
+  ipfsHttpModule: require('ipfs-http-client'),
+  ipfsBin: isNode ? require('go-ipfs-dep').path() : undefined,
+  test: true,
+  endpoint: 'http://localhost:57483'
 })
 
 const DelegatedContentRouting = require('../src')
@@ -15,11 +22,13 @@ const DelegatedContentRouting = require('../src')
 async function spawnNode (bootstrap = []) {
   const node = await factory.spawn({
     // Lock down the nodes so testing can be deterministic
-    config: {
-      Bootstrap: bootstrap,
-      Discovery: {
-        MDNS: {
-          Enabled: false
+    ipfsOptions: {
+      config: {
+        Bootstrap: bootstrap,
+        Discovery: {
+          MDNS: {
+            Enabled: false
+          }
         }
       }
     }
@@ -59,11 +68,7 @@ describe('DelegatedContentRouting', function () {
   })
 
   after(() => {
-    return Promise.all([
-      selfNode.stop(),
-      delegateNode.stop(),
-      bootstrapNode.stop()
-    ])
+    return factory.clean()
   })
 
   describe('create', () => {
@@ -109,11 +114,13 @@ describe('DelegatedContentRouting', function () {
     const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
 
     before('register providers', async () => {
-      await bootstrapNode.api.dht.provide(cid)
-      await selfNode.api.dht.provide(cid)
+      await drain(bootstrapNode.api.dht.provide(cid))
+      await drain(selfNode.api.dht.provide(cid))
     })
 
-    it('should be able to find providers through the delegate node', async () => {
+    it('should be able to find providers through the delegate node', async function () {
+      this.timeout(60000)
+
       const opts = delegateNode.apiAddr.toOptions()
       const routing = new DelegatedContentRouting(selfId, {
         protocol: 'http',
@@ -153,13 +160,14 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       })
 
-      const res = await selfNode.api.add(Buffer.from(`hello-${Math.random()}`))
-      const cid = new CID(res[0].hash)
+      const { cid } = await last(selfNode.api.add(Buffer.from(`hello-${Math.random()}`)))
+
       await contentRouter.provide(cid)
-      const providers = await delegateNode.api.dht.findProvs(cid.toBaseEncodedString())
+
+      const providers = await all(delegateNode.api.dht.findProvs(cid, { numProviders: 2 }))
 
       // We are hosting the file, validate we're the provider
-      expect(providers.map((p) => p.id.toB58String())).to.include(selfId.toB58String(), 'Did not include self node')
+      expect(providers.map((p) => p.id)).to.include(selfId.toB58String(), 'Did not include self node')
     })
   })
 })
