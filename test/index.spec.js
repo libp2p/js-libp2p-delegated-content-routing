@@ -119,8 +119,6 @@ describe('DelegatedContentRouting', function () {
     })
 
     it('should be able to find providers through the delegate node', async function () {
-      this.timeout(60000)
-
       const opts = delegateNode.apiAddr.toOptions()
       const routing = new DelegatedContentRouting(selfId, {
         protocol: 'http',
