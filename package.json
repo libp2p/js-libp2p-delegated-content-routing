@@ -22,17 +22,20 @@
     "chai": "^4.2.0",
     "cids": "^0.7.1",
     "go-ipfs-dep": "^0.4.23",
+    "ipfs-http-client": "^42.0.0",
     "ipfsd-ctl": "~0.47.4",
     "peer-id": "^0.13.7"
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "ipfs-http-client": "^42.0.0",
     "it-all": "^1.0.0",
     "multiaddr": "^7.2.1",
     "p-defer": "^3.0.0",
     "p-queue": "^6.2.1",
     "peer-info": "^0.17.1"
+  },
+  "peerDependencies": {
+    "ipfs-http-client": "^42.0.0",
   },
   "contributors": [
     "Alan Shaw <alan.shaw@protocol.ai>",
