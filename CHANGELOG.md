@@ -1,3 +1,8 @@
+<a name="0.4.4"></a>
+## [0.4.4](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.4.3...v0.4.4) (2020-04-09)
+
+
+
 <a name="0.4.3"></a>
 ## [0.4.3](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.4.2...v0.4.3) (2020-02-04)
 
