@@ -62,6 +62,7 @@ class DelegatedContentRouting {
    * @param {CID} key
    * @param {object} options
    * @param {number} options.timeout How long the query can take. Defaults to 30 seconds
+   * @param {number} options.numProviders How many providers to find, defaults to 20
    * @returns {AsyncIterable<PeerInfo>}
    */
   async * findProviders (key, options = {}) {
@@ -80,12 +81,12 @@ class DelegatedContentRouting {
     try {
       await onStart.promise
 
-      const providers = this.dht.findProvs(key, {
+      for await (const { id, addrs } of this.dht.findProvs(key, {
         numProviders: options.numProviders,
-        timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
-      })
-
-      for await (const { id, addrs } of providers) {
+        searchParams: {
+          timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
+        }
+      })) {
         const peerInfo = new PeerInfo(PeerId.createFromCID(id))
         addrs.forEach(addr => peerInfo.multiaddrs.add(addr))
         yield peerInfo
