@@ -30,8 +30,8 @@ const routing = new DelegatedContentRouing(peerId, {
 })
 const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
 
-for await (const peerInfo of routing.findProviders(cid)) {
-  console.log('found peer', peerInfo)
+for await (const { id, addrs } of routing.findProviders(cid)) {
+  console.log('found peer', id, addrs)
 }
 
 await routing.provide(cid)
