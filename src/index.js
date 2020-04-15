@@ -83,14 +83,15 @@ class DelegatedContentRouting {
 
       for await (const { id, addrs } of this.dht.findProvs(key, {
         numProviders: options.numProviders,
-        searchParams: {
-          timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
-        }
+        timeout: `${options.timeout}ms` // The api requires specification of the time unit (s/ms)
       })) {
         const peerInfo = new PeerInfo(PeerId.createFromCID(id))
         addrs.forEach(addr => peerInfo.multiaddrs.add(addr))
         yield peerInfo
       }
+    } catch (err) {
+      log.error('findProviders errored:', err)
+      throw err
     } finally {
       onFinish.resolve()
       log('findProviders finished:', keyString)
