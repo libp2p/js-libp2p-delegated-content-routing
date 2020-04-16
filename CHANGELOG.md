@@ -1,3 +1,13 @@
+<a name="0.4.5"></a>
+## [0.4.5](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.4.4...v0.4.5) (2020-04-16)
+
+
+### Bug Fixes
+
+* catch find providers error ([#37](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/37)) ([9cc766c](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/9cc766c))
+
+
+
 <a name="0.4.4"></a>
 ## [0.4.4](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.4.3...v0.4.4) (2020-04-09)
 
