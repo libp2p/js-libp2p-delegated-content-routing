@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "ipfs-http-client": "^43.0.2-rc.5",
+    "ipfs-http-client": "^44.0.0",
     "it-all": "^1.0.0",
     "multiaddr": "^7.4.3",
     "p-defer": "^3.0.0",
