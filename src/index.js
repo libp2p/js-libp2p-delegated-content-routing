@@ -62,7 +62,7 @@ class DelegatedContentRouting {
    * @param {object} options
    * @param {number} options.timeout How long the query can take. Defaults to 30 seconds
    * @param {number} options.numProviders How many providers to find, defaults to 20
-   * @returns {AsyncIterable<{ id: PeerId, addrs: Multiaddr[] }>}
+   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * findProviders (key, options = {}) {
     const keyString = `${key}`
@@ -86,7 +86,7 @@ class DelegatedContentRouting {
       })) {
         yield {
           id: PeerId.createFromCID(id),
-          addrs
+          multiaddrs: addrs
         }
       }
     } catch (err) {
