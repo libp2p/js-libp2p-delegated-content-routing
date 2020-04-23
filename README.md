@@ -16,6 +16,14 @@ Requires access to `/api/v0/dht/findprovs` and `/api/v0/refs` HTTP API endpoints
 
 [Jacob Heun](https://github.com/jacobheun)
 
+## Requirements
+
+`libp2p-delegated-content-routing` leverages the `ipfs-http-client` library and requires it as a peer dependency, as such, both must be installed in order for this module to work properly.
+
+```sh
+npm install ipfs-http-client libp2p-delegated-content-routing
+```
+
 ## Example
 
 ```js
