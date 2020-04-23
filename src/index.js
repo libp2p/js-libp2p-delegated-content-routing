@@ -2,7 +2,6 @@
 
 const debug = require('debug')
 const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
 const createFindProvs = require('ipfs-http-client/src/dht/find-provs')
 const createRefs = require('ipfs-http-client/src/refs')
 
@@ -63,7 +62,7 @@ class DelegatedContentRouting {
    * @param {object} options
    * @param {number} options.timeout How long the query can take. Defaults to 30 seconds
    * @param {number} options.numProviders How many providers to find, defaults to 20
-   * @returns {AsyncIterable<PeerInfo>}
+   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * findProviders (key, options = {}) {
     const keyString = `${key}`
@@ -85,9 +84,10 @@ class DelegatedContentRouting {
         numProviders: options.numProviders,
         timeout: options.timeout
       })) {
-        const peerInfo = new PeerInfo(PeerId.createFromCID(id))
-        addrs.forEach(addr => peerInfo.multiaddrs.add(addr))
-        yield peerInfo
+        yield {
+          id: PeerId.createFromCID(id),
+          multiaddrs: addrs
+        }
       }
     } catch (err) {
       log.error('findProviders errored:', err)

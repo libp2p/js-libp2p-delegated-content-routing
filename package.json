@@ -34,8 +34,7 @@
     "it-all": "^1.0.0",
     "multiaddr": "^7.4.3",
     "p-defer": "^3.0.0",
-    "p-queue": "^6.3.0",
-    "peer-info": "^0.17.5"
+    "p-queue": "^6.2.1"
   },
   "contributors": [
     "Jacob Heun <jacobheun@gmail.com>",
