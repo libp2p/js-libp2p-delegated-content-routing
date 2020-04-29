@@ -21,7 +21,7 @@
     "aegir": "^21.8.1",
     "chai": "^4.2.0",
     "cids": "^0.8.0",
-    "go-ipfs-dep": "0.4.23-3",
+    "go-ipfs-dep": "0.5.0",
     "ipfs-http-client": "^44.0.0",
     "ipfs-utils": "^2.2.0",
     "ipfsd-ctl": "^4.0.1",
