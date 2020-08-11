@@ -1,18 +1,18 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const { expect } = require('aegir/utils/chai')
 const { createFactory } = require('ipfsd-ctl')
-const CID = require('cids')
+const { CID } = require('ipfs-http-client')
 const PeerId = require('peer-id')
 const all = require('it-all')
-const last = require('it-last')
 const drain = require('it-drain')
 const { isNode } = require('ipfs-utils/src/env')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const factory = createFactory({
   type: 'go',
   ipfsHttpModule: require('ipfs-http-client'),
-  ipfsBin: isNode ? require('go-ipfs-dep').path() : undefined,
+  ipfsBin: isNode ? require('go-ipfs').path() : undefined,
   test: true,
   endpoint: 'http://localhost:57483'
 })
@@ -158,7 +158,7 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       })
 
-      const { cid } = await last(selfNode.api.add(Buffer.from(`hello-${Math.random()}`)))
+      const { cid } = await selfNode.api.add(uint8ArrayFromString(`hello-${Math.random()}`))
 
       await contentRouter.provide(cid)
 
