@@ -1,18 +1,18 @@
 /* eslint-env mocha */
 'use strict'
 
-const expect = require('chai').expect
+const { expect } = require('aegir/utils/chai')
 const { createFactory } = require('ipfsd-ctl')
-const CID = require('cids')
+const { CID } = require('ipfs-http-client')
 const PeerId = require('peer-id')
 const all = require('it-all')
-const last = require('it-last')
 const drain = require('it-drain')
 const { isNode } = require('ipfs-utils/src/env')
+const uint8ArrayFromString = require('uint8arrays/from-string')
 const factory = createFactory({
   type: 'go',
   ipfsHttpModule: require('ipfs-http-client'),
-  ipfsBin: isNode ? require('go-ipfs-dep').path() : undefined,
+  ipfsBin: isNode ? require('go-ipfs').path() : undefined,
   test: true,
   endpoint: 'http://localhost:57483'
 })
@@ -111,11 +111,18 @@ describe('DelegatedContentRouting', function () {
   })
 
   describe('findProviders', () => {
-    const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
+    const data = uint8ArrayFromString('some data')
+    const cid = new CID('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
 
     before('register providers', async () => {
-      await drain(bootstrapNode.api.dht.provide(cid))
-      await drain(selfNode.api.dht.provide(cid))
+      await Promise.all([
+        bootstrapNode.api.add(data),
+        selfNode.api.add(data)
+      ])
+      await Promise.all([
+        drain(bootstrapNode.api.dht.provide(cid)),
+        drain(selfNode.api.dht.provide(cid))
+      ])
     })
 
     it('should be able to find providers through the delegate node', async function () {
@@ -142,7 +149,6 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       })
 
-      const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
       const providers = await all(routing.findProviders(cid, { numProviders: 2, timeout: 5e3 }))
 
       expect(providers.map((p) => p.id.toB58String())).to.include(bootstrapId.id, 'Did not include bootstrap node')
@@ -158,7 +164,7 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       })
 
-      const { cid } = await last(selfNode.api.add(Buffer.from(`hello-${Math.random()}`)))
+      const { cid } = await selfNode.api.add(uint8ArrayFromString(`hello-${Math.random()}`))
 
       await contentRouter.provide(cid)
 
