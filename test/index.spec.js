@@ -111,11 +111,18 @@ describe('DelegatedContentRouting', function () {
   })
 
   describe('findProviders', () => {
-    const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
+    const data = uint8ArrayFromString('some data')
+    const cid = new CID('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
 
     before('register providers', async () => {
-      await drain(bootstrapNode.api.dht.provide(cid))
-      await drain(selfNode.api.dht.provide(cid))
+      await Promise.all([
+        bootstrapNode.api.add(data),
+        selfNode.api.add(data)
+      ])
+      await Promise.all([
+        drain(bootstrapNode.api.dht.provide(cid)),
+        drain(selfNode.api.dht.provide(cid))
+      ])
     })
 
     it('should be able to find providers through the delegate node', async function () {
@@ -142,7 +149,6 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       })
 
-      const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
       const providers = await all(routing.findProviders(cid, { numProviders: 2, timeout: 5e3 }))
 
       expect(providers.map((p) => p.id.toB58String())).to.include(bootstrapId.id, 'Did not include bootstrap node')
