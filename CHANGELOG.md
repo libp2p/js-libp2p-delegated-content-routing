@@ -1,3 +1,23 @@
+<a name="0.6.0"></a>
+# [0.6.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.5.0...v0.6.0) (2020-08-12)
+
+
+### Bug Fixes
+
+* replace node buffers with uint8arrays ([#42](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/42)) ([381815e](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/381815e))
+
+
+### BREAKING CHANGES
+
+* - all useage of node Buffers has been replaced with Uint8Arrays
+- all deps now use Uint8Arrays instead of node Buffers
+
+* test: fix provide test
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+
+
+
 <a name="0.5.0"></a>
 # [0.5.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.4.5...v0.5.0) (2020-04-23)
 
