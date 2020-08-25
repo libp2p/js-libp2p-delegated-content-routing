@@ -3,7 +3,8 @@
 
 const { expect } = require('aegir/utils/chai')
 const { createFactory } = require('ipfsd-ctl')
-const { CID } = require('ipfs-http-client')
+const ipfsHttpClient = require('ipfs-http-client')
+const { CID } = ipfsHttpClient
 const PeerId = require('peer-id')
 const all = require('it-all')
 const drain = require('it-drain')
@@ -76,37 +77,27 @@ describe('DelegatedContentRouting', function () {
       expect(() => new DelegatedContentRouting()).to.throw()
     })
 
-    it('should default to https://node0.delegate.ipfs.io as the delegate', () => {
-      const router = new DelegatedContentRouting(selfId)
-
-      expect(router.api).to.include({
-        protocol: 'https',
-        port: 443,
-        host: 'node0.delegate.ipfs.io'
-      })
+    it('should require ipfs http client', () => {
+      expect(() => new DelegatedContentRouting(selfId)).to.throw()
     })
 
-    it('should allow for just specifying the host', () => {
-      const router = new DelegatedContentRouting(selfId, {
-        host: 'other.ipfs.io'
-      })
-
-      expect(router.api).to.include({
-        protocol: 'https',
-        port: 443,
-        host: 'other.ipfs.io'
-      })
-    })
-
-    it('should allow for overriding the api', () => {
-      const api = {
+    it('should accept an http api client instance at construction time', () => {
+      const client = ipfsHttpClient({
         protocol: 'http',
         port: 8000,
         host: 'localhost'
-      }
-      const router = new DelegatedContentRouting(selfId, api)
+      })
+      const router = new DelegatedContentRouting(selfId, client)
 
-      expect(router.api).to.include(api)
+      expect(router).to.have.property('_client')
+        .that.has.property('getEndpointConfig')
+        .that.is.a('function')
+
+      expect(router._client.getEndpointConfig()).to.deep.include({
+        protocol: 'http:',
+        port: '8000',
+        host: 'localhost'
+      })
     })
   })
 
@@ -127,11 +118,11 @@ describe('DelegatedContentRouting', function () {
 
     it('should be able to find providers through the delegate node', async function () {
       const opts = delegateNode.apiAddr.toOptions()
-      const routing = new DelegatedContentRouting(selfId, {
+      const routing = new DelegatedContentRouting(selfId, ipfsHttpClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
-      })
+      }))
 
       const providers = await all(routing.findProviders(cid, { numProviders: 2 }))
 
@@ -143,11 +134,11 @@ describe('DelegatedContentRouting', function () {
 
     it('should be able to specify a timeout', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const routing = new DelegatedContentRouting(selfId, {
+      const routing = new DelegatedContentRouting(selfId, ipfsHttpClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
-      })
+      }))
 
       const providers = await all(routing.findProviders(cid, { numProviders: 2, timeout: 5e3 }))
 
@@ -158,11 +149,11 @@ describe('DelegatedContentRouting', function () {
   describe('provide', () => {
     it('should be able to register as a content provider to the delegate node', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = new DelegatedContentRouting(selfId, {
+      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
-      })
+      }))
 
       const { cid } = await selfNode.api.add(uint8ArrayFromString(`hello-${Math.random()}`))
 
