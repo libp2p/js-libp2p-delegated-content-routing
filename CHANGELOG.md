@@ -1,3 +1,24 @@
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.6.0...v0.7.0) (2020-08-26)
+
+
+### Bug Fixes
+
+* accept http client instance ([#43](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/43)) ([003888a](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/003888a))
+
+
+### BREAKING CHANGES
+
+* - An instance of ipfs http client is now a required argument
+
+* chore: update node versions
+
+* chore: update readme
+
+* chore: restore peer deps
+
+
+
 <a name="0.6.0"></a>
 # [0.6.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.5.0...v0.6.0) (2020-08-12)
 
