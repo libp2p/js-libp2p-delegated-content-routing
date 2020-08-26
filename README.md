@@ -18,7 +18,7 @@ Requires access to `/api/v0/dht/findprovs` and `/api/v0/refs` HTTP API endpoints
 
 ## Requirements
 
-`libp2p-delegated-content-routing` leverages the `ipfs-http-client` library and requires it as a peer dependency, as such, both must be installed in order for this module to work properly.
+`libp2p-delegated-content-routing` leverages the `ipfs-http-client` library and requires an instance of it as a constructor argument.
 
 ```sh
 npm install ipfs-http-client libp2p-delegated-content-routing
@@ -28,14 +28,15 @@ npm install ipfs-http-client libp2p-delegated-content-routing
 
 ```js
 const DelegatedContentRouting = require('libp2p-delegated-content-routing')
+const ipfsHttpClient = require('ipfs-http-client')
 
 // default is to use ipfs.io
-const routing = new DelegatedContentRouing(peerId, {
+const routing = new DelegatedContentRouing(peerId, ipfsHttpClient({
   // use default api settings
   protocol: 'https',
   port: 443,
   host: 'ipfs.io'
-})
+}))
 const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
 
 for await (const { id, multiaddrs } of routing.findProviders(cid)) {

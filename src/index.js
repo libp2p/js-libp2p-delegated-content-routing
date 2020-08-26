@@ -2,8 +2,6 @@
 
 const debug = require('debug')
 const PeerId = require('peer-id')
-const createFindProvs = require('ipfs-http-client/src/dht/find-provs')
-const createRefs = require('ipfs-http-client/src/refs')
 
 const { default: PQueue } = require('p-queue')
 const all = require('it-all')
@@ -13,12 +11,6 @@ const log = debug('libp2p-delegated-content-routing')
 log.error = debug('libp2p-delegated-content-routing:error')
 
 const DEFAULT_TIMEOUT = 30e3 // 30 second default
-const DEFAULT_IPFS_API = {
-  protocol: 'https',
-  port: 443,
-  host: 'node0.delegate.ipfs.io'
-}
-
 const CONCURRENT_HTTP_REQUESTS = 4
 
 /**
@@ -29,16 +21,18 @@ class DelegatedContentRouting {
    * Create a new DelegatedContentRouting instance.
    *
    * @param {PeerID} peerId - the id of the node that is using this routing.
-   * @param {object} [api] - (Optional) the api endpoint of the delegated node to use.
+   * @param {object} [client] - an instance of the ipfs-http-client module
    */
-  constructor (peerId, api) {
+  constructor (peerId, client) {
     if (peerId == null) {
       throw new Error('missing self peerId')
     }
 
-    this.api = Object.assign({}, DEFAULT_IPFS_API, api)
-    this.dht = { findProvs: createFindProvs(this.api) }
-    this.refs = createRefs(this.api)
+    if (client == null) {
+      throw new Error('missing ipfs http client')
+    }
+
+    this._client = client
     this.peerId = peerId
 
     // limit concurrency to avoid request flood in web browser
@@ -50,7 +44,14 @@ class DelegatedContentRouting {
     this._httpQueueRefs = new PQueue(Object.assign({}, concurrency, {
       concurrency: 2
     }))
-    log(`enabled DelegatedContentRouting via ${this.api.protocol}://${this.api.host}:${this.api.port}`)
+
+    const {
+      protocol,
+      host,
+      port
+    } = client.getEndpointConfig()
+
+    log(`enabled DelegatedContentRouting via ${protocol}://${host}:${port}`)
   }
 
   /**
@@ -80,7 +81,7 @@ class DelegatedContentRouting {
     try {
       await onStart.promise
 
-      for await (const { id, addrs } of this.dht.findProvs(key, {
+      for await (const { id, addrs } of this._client.dht.findProvs(key, {
         numProviders: options.numProviders,
         timeout: options.timeout
       })) {
@@ -113,7 +114,7 @@ class DelegatedContentRouting {
     const keyString = `${key}`
     log('provide starts:', keyString)
     const results = await this._httpQueueRefs.add(() =>
-      all(this.refs(keyString, { recursive: false }))
+      all(this._client.refs(keyString, { recursive: false }))
     )
     log('provide finished:', keyString, results)
   }
