@@ -31,7 +31,7 @@ const DelegatedContentRouting = require('libp2p-delegated-content-routing')
 const ipfsHttpClient = require('ipfs-http-client')
 
 // default is to use ipfs.io
-const routing = new DelegatedContentRouing(peerId, ipfsHttpClient({
+const routing = new DelegatedContentRouting(peerId, ipfsHttpClient({
   // use default api settings
   protocol: 'https',
   port: 443,
