@@ -21,7 +21,7 @@ class DelegatedContentRouting {
    * Create a new DelegatedContentRouting instance.
    *
    * @param {PeerID} peerId - the id of the node that is using this routing.
-   * @param {object} [client] - an instance of the ipfs-http-client module
+   * @param {object} client - an instance of the ipfs-http-client module
    */
   constructor (peerId, client) {
     if (peerId == null) {
