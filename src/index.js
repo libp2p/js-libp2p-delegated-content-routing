@@ -61,8 +61,8 @@ class DelegatedContentRouting {
    *
    * @param {CID} key
    * @param {object} options
-   * @param {number} options.timeout How long the query can take. Defaults to 30 seconds
-   * @param {number} options.numProviders How many providers to find, defaults to 20
+   * @param {number} options.timeout - How long the query can take. Defaults to 30 seconds
+   * @param {number} options.numProviders - How many providers to find, defaults to 20
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * findProviders (key, options = {}) {
@@ -107,7 +107,6 @@ class DelegatedContentRouting {
    * - call refs on the delegated node, so it fetches the content
    *
    * @param {CID} key
-   * @param {function(Error)} callback
    * @returns {Promise<void>}
    */
   async provide (key) {
