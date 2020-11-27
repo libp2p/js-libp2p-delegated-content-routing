@@ -1,3 +1,47 @@
+## [0.8.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.4.1...v0.8.1) (2020-11-27)
+
+
+### Bug Fixes
+
+* accept http client instance ([#43](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/43)) ([003888a](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/003888a8eab1c8bd5aaed7adec58e8722ec4b2ff))
+* catch find providers error ([#37](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/37)) ([9cc766c](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/9cc766cb6ee9525f46843f2cbb30802f7da0f039))
+* replace node buffers with uint8arrays ([#42](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/42)) ([381815e](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/381815e0cd10cba6ee4d21ba46f8ddda9df4da83))
+
+
+### chore
+
+* make ipfs-http-client a peer dependency ([#39](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/39)) ([0c0f304](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/0c0f304217eb40fe96278b6f7bfafb6a77900a83))
+* remove peer-info from api ([#34](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/34)) ([2c97221](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/2c972211b002ecc9f3a9cd2fa0fba04b08b854f8))
+
+
+### BREAKING CHANGES
+
+* - An instance of ipfs http client is now a required argument
+
+* chore: update node versions
+
+* chore: update readme
+
+* chore: restore peer deps
+* - all useage of node Buffers has been replaced with Uint8Arrays
+- all deps now use Uint8Arrays instead of node Buffers
+
+* test: fix provide test
+
+Co-authored-by: Jacob Heun <jacobheun@gmail.com>
+* The ipfs-http-client must now be installed
+as a peer dependency. It is no longer included as a dependency
+of this module.
+
+The reason the http-client should be a peerDependency and
+not a dependency is that its API requires knowledge of the
+http-client (we pass in the api endpoint details).
+* findProviders returns id and addrs properties instead of peer-info instance
+
+* chore: address review
+
+
+
 # [0.8.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.7.0...v0.8.0) (2020-10-21)
 
 
