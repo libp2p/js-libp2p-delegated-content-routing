@@ -88,7 +88,7 @@ class DelegatedContentRouting {
       await onStart.promise
 
       for await (const { id, addrs } of this._client.dht.findProvs(key, {
-        numProviders: options.numProviders || 1,
+        numProviders: options.numProviders,
         timeout: options.timeout
       })) {
         yield {
