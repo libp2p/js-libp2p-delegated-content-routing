@@ -1,3 +1,12 @@
+# [0.9.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.8.1...v0.9.0) (2021-01-20)
+
+
+### Features
+
+* allow providing non-dag-pb nodes ([#47](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/47)) ([28d3a45](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/28d3a456bc8aaaa359586a056b5366d89fc5e738))
+
+
+
 ## [0.8.2](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.8.1...v0.8.2) (2020-11-30)
 
 
