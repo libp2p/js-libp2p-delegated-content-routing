@@ -2,6 +2,7 @@
 
 const debug = require('debug')
 const PeerId = require('peer-id')
+const drain = require('it-drain')
 
 const { default: PQueue } = require('p-queue')
 const defer = require('p-defer')
@@ -124,7 +125,7 @@ class DelegatedContentRouting {
     log(`provide starts: ${key}`)
     await this._httpQueueRefs.add(async () => {
       await this._client.block.stat(key)
-      await this._client.dht.provide(key)
+      await drain(this._client.dht.provide(key))
     })
     log(`provide finished: ${key}`)
   }
