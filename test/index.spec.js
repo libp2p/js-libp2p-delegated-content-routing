@@ -164,5 +164,23 @@ describe('DelegatedContentRouting', function () {
       // We are hosting the file, validate we're the provider
       expect(providers.map((p) => p.id)).to.include(selfId.toB58String(), 'Did not include self node')
     })
+
+    it('should provide non-dag-pb nodes via the delegate node', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient({
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      }))
+
+      const cid = await selfNode.api.dag.put(`hello-${Math.random()}`, { format: 'dag-cbor', hashAlg: 'sha2-256' })
+
+      await contentRouter.provide(cid)
+
+      const providers = await all(delegateNode.api.dht.findProvs(cid, { numProviders: 2 }))
+
+      // We are hosting the file, validate we're the provider
+      expect(providers.map((p) => p.id)).to.include(selfId.toB58String(), 'Did not include self node')
+    })
   })
 })

@@ -2,9 +2,9 @@
 
 const debug = require('debug')
 const PeerId = require('peer-id')
+const drain = require('it-drain')
 
 const { default: PQueue } = require('p-queue')
-const all = require('it-all')
 const defer = require('p-defer')
 
 const log = debug('libp2p-delegated-content-routing')
@@ -12,6 +12,12 @@ log.error = debug('libp2p-delegated-content-routing:error')
 
 const DEFAULT_TIMEOUT = 30e3 // 30 second default
 const CONCURRENT_HTTP_REQUESTS = 4
+
+/**
+ * @typedef {import('peer-id').PeerID} PeerID
+ * @typedef {import('cids').CID} CID
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ */
 
 /**
  * An implementation of content routing, using a delegated peer.
@@ -40,7 +46,7 @@ class DelegatedContentRouting {
     const concurrency = { concurrency: CONCURRENT_HTTP_REQUESTS }
     this._httpQueue = new PQueue(concurrency)
     // sometimes refs requests take long time, they need separate queue
-    // to not suffocate regular bussiness
+    // to not suffocate regular business
     this._httpQueueRefs = new PQueue(Object.assign({}, concurrency, {
       concurrency: 2
     }))
@@ -59,17 +65,17 @@ class DelegatedContentRouting {
    *
    * - call `findProviders` on the delegated node.
    *
-   * @param {CID} key
-   * @param {object} options
+   * @param {CID} key - The CID to find providers for
+   * @param {object} options - Options
    * @param {number} options.timeout - How long the query can take. Defaults to 30 seconds
    * @param {number} options.numProviders - How many providers to find, defaults to 20
-   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
+   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} - An async iterable of PeerId/Multiaddrs
    */
   async * findProviders (key, options = {}) {
-    const keyString = `${key}`
-    log('findProviders starts:', keyString)
+    log(`findProviders starts: ${key}`)
     options.timeout = options.timeout || DEFAULT_TIMEOUT
 
+    let providers = 0
     const onStart = defer()
     const onFinish = defer()
 
@@ -89,13 +95,14 @@ class DelegatedContentRouting {
           id: PeerId.createFromCID(id),
           multiaddrs: addrs
         }
+        providers++
       }
     } catch (err) {
       log.error('findProviders errored:', err)
       throw err
     } finally {
       onFinish.resolve()
-      log('findProviders finished:', keyString)
+      log(`findProviders finished: ${key} found ${providers} providers`)
     }
   }
 
@@ -104,18 +111,23 @@ class DelegatedContentRouting {
    *
    * Currently this uses the following hack
    * - delegate is one of bootstrap nodes, so we are always connected to it
-   * - call refs on the delegated node, so it fetches the content
+   * - call block stat on the delegated node, so it fetches the content
+   * - call dht provide with the passed cid
    *
-   * @param {CID} key
+   * N.B. this must be called for every block in the dag you want provided otherwise
+   * the delegate will only be able to supply the root block of the dag when asked
+   * for the data by an interested peer.
+   *
+   * @param {CID} key - The delegate will publish a provider record for this CID
    * @returns {Promise<void>}
    */
   async provide (key) {
-    const keyString = `${key}`
-    log('provide starts:', keyString)
-    const results = await this._httpQueueRefs.add(() =>
-      all(this._client.refs(keyString, { recursive: false }))
-    )
-    log('provide finished:', keyString, results)
+    log(`provide starts: ${key}`)
+    await this._httpQueueRefs.add(async () => {
+      await this._client.block.stat(key)
+      await drain(this._client.dht.provide(key))
+    })
+    log(`provide finished: ${key}`)
   }
 }
 
