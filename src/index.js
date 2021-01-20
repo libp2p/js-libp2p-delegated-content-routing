@@ -4,7 +4,6 @@ const debug = require('debug')
 const PeerId = require('peer-id')
 
 const { default: PQueue } = require('p-queue')
-const all = require('it-all')
 const defer = require('p-defer')
 
 const log = debug('libp2p-delegated-content-routing')
@@ -12,6 +11,12 @@ log.error = debug('libp2p-delegated-content-routing:error')
 
 const DEFAULT_TIMEOUT = 30e3 // 30 second default
 const CONCURRENT_HTTP_REQUESTS = 4
+
+/**
+ * @typedef {import('peer-id').PeerID} PeerID
+ * @typedef {import('cids').CID} CID
+ * @typedef {import('multiaddr').Multiaddr} Multiaddr
+ */
 
 /**
  * An implementation of content routing, using a delegated peer.
@@ -40,7 +45,7 @@ class DelegatedContentRouting {
     const concurrency = { concurrency: CONCURRENT_HTTP_REQUESTS }
     this._httpQueue = new PQueue(concurrency)
     // sometimes refs requests take long time, they need separate queue
-    // to not suffocate regular bussiness
+    // to not suffocate regular business
     this._httpQueueRefs = new PQueue(Object.assign({}, concurrency, {
       concurrency: 2
     }))
@@ -59,11 +64,11 @@ class DelegatedContentRouting {
    *
    * - call `findProviders` on the delegated node.
    *
-   * @param {CID} key
-   * @param {object} options
+   * @param {CID} key - The CID to find providers for
+   * @param {object} options - Options
    * @param {number} options.timeout - How long the query can take. Defaults to 30 seconds
    * @param {number} options.numProviders - How many providers to find, defaults to 20
-   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
+   * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>} - An async iterable of PeerId/Multiaddrs
    */
   async * findProviders (key, options = {}) {
     log(`findProviders starts: ${key}`)
@@ -112,7 +117,7 @@ class DelegatedContentRouting {
    * the delegate will only be able to supply the root block of the dag when asked
    * for the data by an interested peer.
    *
-   * @param {CID} key
+   * @param {CID} key - The delegate will publish a provider record for this CID
    * @returns {Promise<void>}
    */
   async provide (key) {
