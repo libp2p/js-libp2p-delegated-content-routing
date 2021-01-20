@@ -82,7 +82,7 @@ class DelegatedContentRouting {
       await onStart.promise
 
       for await (const { id, addrs } of this._client.dht.findProvs(key, {
-        numProviders: options.numProviders,
+        numProviders: options.numProviders || 1,
         timeout: options.timeout
       })) {
         yield {
@@ -106,8 +106,7 @@ class DelegatedContentRouting {
    * Currently this uses the following hack
    * - delegate is one of bootstrap nodes, so we are always connected to it
    * - call block stat on the delegated node, so it fetches the content
-   * - the delegate runs a re-provide on every block in the block store so
-   *   eventually the block will be published to the DHT
+   * - call dht provide with the passed cid
    *
    * N.B. this must be called for every block in the dag you want provided otherwise
    * the delegate will only be able to supply the root block of the dag when asked
@@ -118,8 +117,11 @@ class DelegatedContentRouting {
    */
   async provide (key) {
     log(`provide starts: ${key}`)
-    const results = await this._httpQueueRefs.add(() => this._client.block.stat(key))
-    log(`provide finished: ${key}`, results)
+    await this._httpQueueRefs.add(async () => {
+      await this._client.block.stat(key)
+      await this._client.dht.provide(key)
+    })
+    log(`provide finished: ${key}`)
   }
 }
 
