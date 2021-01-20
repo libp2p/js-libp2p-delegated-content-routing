@@ -66,10 +66,10 @@ class DelegatedContentRouting {
    * @returns {AsyncIterable<{ id: PeerId, multiaddrs: Multiaddr[] }>}
    */
   async * findProviders (key, options = {}) {
-    const keyString = `${key}`
-    log('findProviders starts:', keyString)
+    log(`findProviders starts: ${key}`)
     options.timeout = options.timeout || DEFAULT_TIMEOUT
 
+    let providers = 0
     const onStart = defer()
     const onFinish = defer()
 
@@ -89,13 +89,14 @@ class DelegatedContentRouting {
           id: PeerId.createFromCID(id),
           multiaddrs: addrs
         }
+        providers++
       }
     } catch (err) {
       log.error('findProviders errored:', err)
       throw err
     } finally {
       onFinish.resolve()
-      log('findProviders finished:', keyString)
+      log(`findProviders finished: ${key} found ${providers} providers`)
     }
   }
 
@@ -104,18 +105,21 @@ class DelegatedContentRouting {
    *
    * Currently this uses the following hack
    * - delegate is one of bootstrap nodes, so we are always connected to it
-   * - call refs on the delegated node, so it fetches the content
+   * - call block stat on the delegated node, so it fetches the content
+   * - the delegate runs a re-provide on every block in the block store so
+   *   eventually the block will be published to the DHT
+   *
+   * N.B. this must be called for every block in the dag you want provided otherwise
+   * the delegate will only be able to supply the root block of the dag when asked
+   * for the data by an interested peer.
    *
    * @param {CID} key
    * @returns {Promise<void>}
    */
   async provide (key) {
-    const keyString = `${key}`
-    log('provide starts:', keyString)
-    const results = await this._httpQueueRefs.add(() =>
-      all(this._client.refs(keyString, { recursive: false }))
-    )
-    log('provide finished:', keyString, results)
+    log(`provide starts: ${key}`)
+    const results = await this._httpQueueRefs.add(() => this._client.block.stat(key))
+    log(`provide finished: ${key}`, results)
   }
 }
 
