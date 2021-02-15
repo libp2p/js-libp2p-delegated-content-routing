@@ -35,7 +35,7 @@ const routing = new DelegatedContentRouting(peerId, ipfsHttpClient({
   // use default api settings
   protocol: 'https',
   port: 443,
-  host: 'ipfs.io'
+  host: 'node0.delegate.ipfs.io' // In production you should setup your own delegates
 }))
 const cid = new CID('QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv')
 
