@@ -9,6 +9,7 @@
   "private": false,
   "scripts": {
     "lint": "aegir lint",
+    "prepare": "npm run build",
     "build": "aegir build",
     "test": "aegir test",
     "test:node": "aegir test --target node",
