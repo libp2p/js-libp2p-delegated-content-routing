@@ -61,7 +61,7 @@ describe('DelegatedContentRouting', function () {
     // Spawn our local node and bootstrap the bootstrapper node
     const self = await spawnNode(bootstrapId.addresses)
     selfNode = self.node
-    selfId = PeerId.createFromB58String(self.id.id)
+    selfId = PeerId.parse(self.id.id)
 
     // Spawn the delegate node and bootstrap the bootstrapper node
     const delegate = await spawnNode(bootstrapId.addresses)
