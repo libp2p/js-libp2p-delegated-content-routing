@@ -1,3 +1,17 @@
+# [0.11.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.10.0...v0.11.0) (2021-07-07)
+
+
+### chore
+
+* update to new multiformats ([#52](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/52)) ([f34c7d2](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/f34c7d29e1c2016242a13e23799e428d2a751e6f))
+
+
+### BREAKING CHANGES
+
+* uses the CID class from the new multiformats module
+
+
+
 # [0.10.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.9.0...v0.10.0) (2021-04-09)
 
 
