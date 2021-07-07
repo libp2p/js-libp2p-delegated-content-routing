@@ -92,7 +92,7 @@ class DelegatedContentRouting {
         timeout: options.timeout
       })) {
         yield {
-          id: PeerId.createFromCID(id),
+          id: PeerId.parse(id),
           multiaddrs: addrs
         }
         providers++

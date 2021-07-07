@@ -61,7 +61,7 @@ describe('DelegatedContentRouting', function () {
     // Spawn our local node and bootstrap the bootstrapper node
     const self = await spawnNode(bootstrapId.addresses)
     selfNode = self.node
-    selfId = PeerId.createFromB58String(self.id.id)
+    selfId = PeerId.parse(self.id.id)
 
     // Spawn the delegate node and bootstrap the bootstrapper node
     const delegate = await spawnNode(bootstrapId.addresses)
@@ -82,7 +82,7 @@ describe('DelegatedContentRouting', function () {
     })
 
     it('should accept an http api client instance at construction time', () => {
-      const client = ipfsHttpClient({
+      const client = ipfsHttpClient.create({
         protocol: 'http',
         port: 8000,
         host: 'localhost'
@@ -118,7 +118,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should be able to find providers through the delegate node', async function () {
       const opts = delegateNode.apiAddr.toOptions()
-      const routing = new DelegatedContentRouting(selfId, ipfsHttpClient({
+      const routing = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -134,7 +134,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should be able to specify a timeout', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const routing = new DelegatedContentRouting(selfId, ipfsHttpClient({
+      const routing = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -149,7 +149,7 @@ describe('DelegatedContentRouting', function () {
   describe('provide', () => {
     it('should be able to register as a content provider to the delegate node', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient({
+      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -167,7 +167,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should provide non-dag-pb nodes via the delegate node', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient({
+      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
         protocol: 'http',
         port: opts.port,
         host: opts.host
