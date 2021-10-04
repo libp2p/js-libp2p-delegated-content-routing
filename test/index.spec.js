@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
+const loadFixture = require('aegir/utils/fixtures')
 const { expect } = require('aegir/utils/chai')
 const { createFactory } = require('ipfsd-ctl')
 const ipfsHttpClient = require('ipfs-http-client')
@@ -181,6 +182,47 @@ describe('DelegatedContentRouting', function () {
 
       // We are hosting the file, validate we're the provider
       expect(providers.map((p) => p.id)).to.include(selfId.toB58String(), 'Did not include self node')
+    })
+  })
+
+  describe('put', async () => {
+    it('should associate an IPNS record with a key', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      }))
+
+      const key = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
+      const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
+
+      await contentRouter.put(key, value)
+
+      // check the delegate node to see if the value is retrievable
+      const fetched = await delegateNode.api.dht.get(key)
+      expect(fetched).to.deep.equal(value)
+    })
+  })
+
+  describe('get', async () => {
+    it('should retrieve an IPNS record for a valid key', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      }))
+
+      const key = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
+      const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
+
+      // publish the record from the delegate node
+      await drain(delegateNode.api.dht.put(key, value))
+
+      // try to fetch it from the js node
+      const fetched = await contentRouter.get(key)
+      expect(fetched).to.deep.equal(value)
     })
   })
 })
