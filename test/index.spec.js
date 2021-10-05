@@ -1,48 +1,16 @@
 /* eslint-env mocha */
 'use strict'
 
-const loadFixture = require('aegir/utils/fixtures')
 const { expect } = require('aegir/utils/chai')
-const { createFactory } = require('ipfsd-ctl')
 const ipfsHttpClient = require('ipfs-http-client')
 const { CID } = ipfsHttpClient
 const PeerId = require('peer-id')
 const all = require('it-all')
 const drain = require('it-drain')
-const { isNode } = require('ipfs-utils/src/env')
 const uint8ArrayFromString = require('uint8arrays/from-string')
-const factory = createFactory({
-  type: 'go',
-  ipfsHttpModule: require('ipfs-http-client'),
-  ipfsBin: isNode ? require('go-ipfs').path() : undefined,
-  test: true,
-  endpoint: 'http://localhost:57483'
-})
 
+const { spawnNode, cleanupNodeFactory } = require('./test-utils')
 const DelegatedContentRouting = require('../src')
-
-async function spawnNode (bootstrap = []) {
-  const node = await factory.spawn({
-    // Lock down the nodes so testing can be deterministic
-    ipfsOptions: {
-      config: {
-        Bootstrap: bootstrap,
-        Discovery: {
-          MDNS: {
-            Enabled: false
-          }
-        }
-      }
-    }
-  })
-
-  const id = await node.api.id()
-
-  return {
-    node,
-    id
-  }
-}
 
 describe('DelegatedContentRouting', function () {
   this.timeout(20 * 1000) // we're spawning daemons, give ci some time
@@ -70,7 +38,7 @@ describe('DelegatedContentRouting', function () {
   })
 
   after(() => {
-    return factory.clean()
+    return cleanupNodeFactory()
   })
 
   describe('create', () => {
@@ -182,47 +150,6 @@ describe('DelegatedContentRouting', function () {
 
       // We are hosting the file, validate we're the provider
       expect(providers.map((p) => p.id)).to.include(selfId.toB58String(), 'Did not include self node')
-    })
-  })
-
-  describe('put', async () => {
-    it('should associate an IPNS record with a key', async () => {
-      const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
-        protocol: 'http',
-        port: opts.port,
-        host: opts.host
-      }))
-
-      const key = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
-      const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
-
-      await contentRouter.put(key, value)
-
-      // check the delegate node to see if the value is retrievable
-      const fetched = await delegateNode.api.dht.get(key)
-      expect(fetched).to.deep.equal(value)
-    })
-  })
-
-  describe('get', async () => {
-    it('should retrieve an IPNS record for a valid key', async () => {
-      const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = new DelegatedContentRouting(selfId, ipfsHttpClient.create({
-        protocol: 'http',
-        port: opts.port,
-        host: opts.host
-      }))
-
-      const key = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
-      const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
-
-      // publish the record from the delegate node
-      await drain(delegateNode.api.dht.put(key, value))
-
-      // try to fetch it from the js node
-      const fetched = await contentRouter.get(key)
-      expect(fetched).to.deep.equal(value)
     })
   })
 })
