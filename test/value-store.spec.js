@@ -13,6 +13,7 @@ describe('DelegatedValueStore', function () {
   this.timeout(20 * 1000) // we're spawning daemons, give ci some time
 
   let delegateNode
+  let delegateId
 
   before(async () => {
     // Spawn a "Boostrap" node that doesnt connect to anything
@@ -22,6 +23,7 @@ describe('DelegatedValueStore', function () {
     // Spawn the delegate node and bootstrap the bootstrapper node
     const delegate = await spawnNode(bootstrapId.addresses)
     delegateNode = delegate.node
+    delegateId = await delegateNode.api.id()
   })
 
   after(() => {
@@ -29,8 +31,11 @@ describe('DelegatedValueStore', function () {
   })
 
   describe('create', () => {
-    it('should require ipfs http client', () => {
+    it('should require the peer id of the delegate node', () => {
       expect(() => new DelegatedValueStore()).to.throw()
+    })
+    it('should require ipfs http client', () => {
+      expect(() => new DelegatedValueStore(delegateId)).to.throw()
     })
 
     it('should accept an http api client instance at construction time', () => {
@@ -39,7 +44,7 @@ describe('DelegatedValueStore', function () {
         port: 8000,
         host: 'localhost'
       })
-      const valueStore = new DelegatedValueStore(client)
+      const valueStore = new DelegatedValueStore(delegateId, client)
 
       expect(valueStore).to.have.property('_client')
         .that.has.property('getEndpointConfig')
@@ -56,7 +61,7 @@ describe('DelegatedValueStore', function () {
   describe('put', async () => {
     it('should associate an IPNS record with a key', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const valueStore = new DelegatedValueStore(ipfsHttpClient.create({
+      const valueStore = new DelegatedValueStore(delegateId, ipfsHttpClient.create({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -76,7 +81,7 @@ describe('DelegatedValueStore', function () {
   describe('get', async () => {
     it('should retrieve an IPNS record for a valid key', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const valueStore = new DelegatedValueStore(ipfsHttpClient.create({
+      const valueStore = new DelegatedValueStore(delegateId, ipfsHttpClient.create({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -89,8 +94,9 @@ describe('DelegatedValueStore', function () {
       await drain(delegateNode.api.dht.put(key, value))
 
       // try to fetch it from the js node
-      const fetched = await valueStore.get(key)
-      expect(fetched).to.deep.equal(value)
+      const result = await valueStore.get(key)
+      expect(result.from).to.deep.equal(delegateId)
+      expect(result.val).to.deep.equal(value)
     })
   })
 })

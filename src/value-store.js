@@ -7,6 +7,15 @@ const { default: PQueue } = require('p-queue')
 const log = debug('libp2p-delegated-content-routing:value-store')
 const CONCURRENT_HTTP_REQUESTS = 4
 
+
+/**
+ * @typedef {{import('peer-id')}.PeerId} PeerId
+ * 
+ * @typedef {object} GetValueResult
+ * @property {PeerId} from
+ * @property {Uint8Array} val
+ */
+
 /**
  * An implementation of the ValueStoreInterface using a delegated node.
  */
@@ -14,13 +23,19 @@ class DelegatedValueStore {
   /**
    * Create a new DelegatedValueStore instance.
    *
+   * @param {PeerId} delegateId - the peer id of the delegate node
    * @param {object} client  - an instance of the ipfs-http-client module
    */
-  constructor (client) {
+  constructor (delegateId, client) {
+    if (delegateId == null) {
+      throw new Error('missing delegate peer id')
+    }
+
     if (client == null) {
       throw new Error('missing ipfs http client')
     }
 
+    this._delegateId = delegateId
     this._client = client
     const concurrency = { concurrency: CONCURRENT_HTTP_REQUESTS }
     this._httpQueue = new PQueue(concurrency)
@@ -62,17 +77,19 @@ class DelegatedValueStore {
    * @param {Uint8Array|string} key - the key to lookup. If a Uint8Array is given, it MUST contain valid UTF-8 text.
    * @param {object} [options]
    * @param {number} [options.timeout] - a timeout in ms. Defaults to 30s.
-   * @returns {Promise<Uint8Array>} the value for the given key.
+   * @returns {Promise<GetValueResult>} the value for the given key.
    */
   async get (key, options = {}) {
     const timeout = options.timeout || 3000
     log(`get value start: ${key}`)
-    let value
+    let val
     await this._httpQueue.add(async () => {
-      value = await this._client.dht.get(key, { timeout })
+      val = await this._client.dht.get(key, { timeout })
     })
     log(`get value finished: ${key}`)
-    return value
+    
+    const from = this._delegateId
+    return { from, val }
   }
 }
 
