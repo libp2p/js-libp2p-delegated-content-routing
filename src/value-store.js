@@ -7,10 +7,9 @@ const { default: PQueue } = require('p-queue')
 const log = debug('libp2p-delegated-content-routing:value-store')
 const CONCURRENT_HTTP_REQUESTS = 4
 
-
 /**
  * @typedef {{import('peer-id')}.PeerId} PeerId
- * 
+ *
  * @typedef {object} GetValueResult
  * @property {PeerId} from
  * @property {Uint8Array} val
@@ -87,7 +86,7 @@ class DelegatedValueStore {
       val = await this._client.dht.get(key, { timeout })
     })
     log(`get value finished: ${key}`)
-    
+
     const from = this._delegateId
     return { from, val }
   }
