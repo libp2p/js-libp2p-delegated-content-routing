@@ -72,7 +72,7 @@ describe('DelegatedContentRouting', function () {
 
   describe('findProviders', () => {
     const data = uint8ArrayFromString('some data')
-    const cid = new CID('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
+    const cid = CID.parse('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
 
     before('register providers', async () => {
       await Promise.all([

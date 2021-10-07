@@ -62,7 +62,7 @@ describe('DelegatedValueStore', function () {
         host: opts.host
       }))
 
-      const key = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
+      const key = new TextEncoder().encode('/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu')
       const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
 
       await valueStore.put(key, value)
@@ -70,38 +70,6 @@ describe('DelegatedValueStore', function () {
       // check the delegate node to see if the value is retrievable
       const fetched = await delegateNode.api.dht.get(key)
       expect(fetched).to.deep.equal(value)
-    })
-
-    it('should accept UTF-8 keys as Uint8Arrays', async () => {
-      const opts = delegateNode.apiAddr.toOptions()
-      const valueStore = new DelegatedValueStore(ipfsHttpClient.create({
-        protocol: 'http',
-        port: opts.port,
-        host: opts.host
-      }))
-
-      const keyStr = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
-      const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
-
-      await valueStore.put(new TextEncoder().encode(keyStr), value)
-
-      // check the delegate node to see if the value is retrievable
-      const fetched = await delegateNode.api.dht.get(keyStr)
-      expect(fetched).to.deep.equal(value)
-    })
-
-    it('should fail if keys are not valid UTF-8', async () => {
-      const opts = delegateNode.apiAddr.toOptions()
-      const valueStore = new DelegatedValueStore(ipfsHttpClient.create({
-        protocol: 'http',
-        port: opts.port,
-        host: opts.host
-      }))
-
-      const key = new TextEncoder([0xff])
-      const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
-
-      expect(valueStore.put(key, value)).to.be.rejectedWith('UTF-8')
     })
   })
 
@@ -114,7 +82,7 @@ describe('DelegatedValueStore', function () {
         host: opts.host
       }))
 
-      const key = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
+      const key = new TextEncoder().encode('/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu')
       const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
 
       // publish the record from the delegate node
@@ -123,37 +91,6 @@ describe('DelegatedValueStore', function () {
       // try to fetch it from the js node
       const fetched = await valueStore.get(key)
       expect(fetched).to.deep.equal(value)
-    })
-
-    it('should accept UTF-8 keys as Uint8Arrays', async () => {
-      const opts = delegateNode.apiAddr.toOptions()
-      const valueStore = new DelegatedValueStore(ipfsHttpClient.create({
-        protocol: 'http',
-        port: opts.port,
-        host: opts.host
-      }))
-
-      const keyStr = '/ipns/k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu'
-      const value = loadFixture('test/fixtures/ipns-k51qzi5uqu5dgg9b8xoi0yagmbl6iyu0k1epa4hew8jm3z9c7zzmkkl1t4hihu.bin')
-
-      // publish the record from the delegate node
-      await drain(delegateNode.api.dht.put(keyStr, value))
-
-      // try to fetch it from the js node
-      const fetched = await valueStore.get(new TextEncoder().encode(keyStr))
-      expect(fetched).to.deep.equal(value)
-    })
-
-    it('should fail if key is not valid UTF-8', async () => {
-      const opts = delegateNode.apiAddr.toOptions()
-      const valueStore = new DelegatedValueStore(ipfsHttpClient.create({
-        protocol: 'http',
-        port: opts.port,
-        host: opts.host
-      }))
-
-      const key = new TextEncoder([0xff])
-      expect(valueStore.get(key)).to.be.rejectedWith('UTF-8')
     })
   })
 })

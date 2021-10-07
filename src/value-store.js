@@ -39,20 +39,19 @@ class DelegatedValueStore {
    * This may fail if the delegated node's content routing implementation does not
    * use a key/value store, or if the delegated operation fails.
    *
-   * @param {Uint8Array|string} key - the key to store the value under
-   * @param {Uint8Array} value - a value to associate with the key. If a Uint8Array is given, it MUST contain valid UTF-8 text.
+   * @param {Uint8Array} key - the key to store the value under
+   * @param {Uint8Array} value - a value to associate with the key.
    * @param {object} [options]
    * @param {number} [options.timeout] - a timeout in ms. Defaults to 30s.
    * @returns {Promise<void>}
    */
   async put (key, value, options = {}) {
     const timeout = options.timeout || 3000
-    const k = keyString(key)
-    log(`put value start: ${k}`)
+    log(`put value start: ${key}`)
     await this._httpQueue.add(async () => {
-      await drain(this._client.dht.put(k, value, { timeout }))
+      await drain(this._client.dht.put(key, value, { timeout }))
     })
-    log(`put value finished: ${k}`)
+    log(`put value finished: ${key}`)
   }
 
   /**
@@ -67,31 +66,13 @@ class DelegatedValueStore {
    */
   async get (key, options = {}) {
     const timeout = options.timeout || 3000
-    const k = keyString(key)
-    log(`get value start: ${k}`)
+    log(`get value start: ${key}`)
     let value
     await this._httpQueue.add(async () => {
-      value = await this._client.dht.get(k, { timeout })
+      value = await this._client.dht.get(key, { timeout })
     })
-    log(`get value finished: ${k}`)
+    log(`get value finished: ${key}`)
     return value
-  }
-}
-
-/**
- * Helper to convert Uint8Array to UTF-8 text, or throw if key is invalid UTF-8
- *
- * @param {Uint8Array|string} key
- * @returns {string}
- */
-const keyString = (key) => {
-  if (typeof key === 'string') {
-    return key
-  }
-  try {
-    return new TextDecoder().decode(key)
-  } catch (e) {
-    throw new Error(`Delegated routing supports only UTF-8 keys. Decoding error: ${e.message}`)
   }
 }
 
