@@ -9,7 +9,7 @@ const PeerId = require('peer-id')
 const all = require('it-all')
 const drain = require('it-drain')
 const { isNode } = require('ipfs-utils/src/env')
-const uint8ArrayFromString = require('uint8arrays/from-string')
+const { fromString: uint8ArrayFromString } = require('uint8arrays/from-string')
 const factory = createFactory({
   type: 'go',
   ipfsHttpModule: require('ipfs-http-client'),
@@ -103,7 +103,7 @@ describe('DelegatedContentRouting', function () {
 
   describe('findProviders', () => {
     const data = uint8ArrayFromString('some data')
-    const cid = new CID('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
+    const cid = CID.parse('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
 
     before('register providers', async () => {
       await Promise.all([
