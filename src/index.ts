@@ -10,6 +10,7 @@ const log = logger('libp2p-delegated-content-routing')
 
 const DEFAULT_TIMEOUT = 30e3 // 30 second default
 const CONCURRENT_HTTP_REQUESTS = 4
+const CONCURRENT_HTTP_REFS_REQUESTS = 2
 
 /**
  * An implementation of content routing, using a delegated peer
@@ -31,13 +32,14 @@ export class DelegatedContentRouting {
 
     // limit concurrency to avoid request flood in web browser
     // https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/12
-    const concurrency = { concurrency: CONCURRENT_HTTP_REQUESTS }
-    this.httpQueue = new PQueue(concurrency)
+    this.httpQueue = new PQueue({
+      concurrency: CONCURRENT_HTTP_REQUESTS
+    })
     // sometimes refs requests take long time, they need separate queue
     // to not suffocate regular business
-    this.httpQueueRefs = new PQueue(Object.assign({}, concurrency, {
-      concurrency: 2
-    }))
+    this.httpQueueRefs = new PQueue({
+      concurrency: CONCURRENT_HTTP_REFS_REQUESTS
+    })
 
     const {
       protocol,
