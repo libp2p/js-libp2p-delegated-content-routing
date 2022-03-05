@@ -1,3 +1,14 @@
+## [1.0.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.11.2...v1.0.0) (2022-03-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to named exports, ESM only
+
+### Features
+
+* convert to typescript ([#67](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/67)) ([5031111](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/5031111a1dea718d7e27e208b3fc1d1f6ac9441e))
+
 ## [0.11.2](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v0.11.0...v0.11.2) (2021-12-15)
 
 
@@ -267,6 +278,3 @@ http-client (we pass in the api endpoint details).
 ### Features
 
 * initial implementation ([#1](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/1)) ([011adc9](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/011adc9))
-
-
-
