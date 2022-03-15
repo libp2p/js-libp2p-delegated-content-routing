@@ -125,15 +125,15 @@ export class DelegatedContentRouting implements ContentRouting {
    * This may fail if the delegated node's content routing implementation does not
    * use a key/value store, or if the delegated operation fails.
    */
-   async put (key: Uint8Array, value :Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
-    const timeout = options.timeout || 3000
-    log(`put value start: ${key}`)
+  async put (key: Uint8Array, value: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
+    const timeout = options.timeout ?? 3000
+    log('put value start: %b', key)
 
     await this.httpQueue.add(async () => {
       await drain(this.client.dht.put(key, value, { timeout }))
     })
 
-    log(`put value finished: ${key}`)
+    log('put value finished: %b', key)
   }
 
   /**
@@ -142,13 +142,13 @@ export class DelegatedContentRouting implements ContentRouting {
    * use a key/value store, or if the delegated operation fails.
    */
   async get (key: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
-    const timeout = options.timeout || 3000
-    log(`get value start: ${key}`)
+    const timeout = options.timeout ?? 3000
+    log('get value start: %b', key)
 
     return await this.httpQueue.add(async () => {
       for await (const event of this.client.dht.get(key, { timeout })) {
         if (event.name === 'VALUE') {
-          log(`get value finished: ${key}`)
+          log('get value finished: %b', key)
           return {
             from: peerIdFromString(event.from),
             val: event.value
