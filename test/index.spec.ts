@@ -124,14 +124,7 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       }))
 
-      const events = await all(routing.findProviders(cid))
-      const providers: PeerData[] = []
-
-      for (const event of events) {
-        if (event.name === 'PEER_RESPONSE') {
-          providers.push(...event.providers)
-        }
-      }
+      const providers = await all(routing.findProviders(cid))
 
       // We should get the bootstrap node as provider
       // The delegate node is not included, because it is handling the requests
@@ -147,14 +140,7 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       }))
 
-      const events = await all(routing.findProviders(cid, { timeout: 5e3 }))
-      const providers: PeerData[] = []
-
-      for (const event of events) {
-        if (event.name === 'PEER_RESPONSE') {
-          providers.push(...event.providers)
-        }
-      }
+      const providers = await all(routing.findProviders(cid, { timeout: 5e3 }))
 
       expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id, 'Did not include bootstrap node')
     })
