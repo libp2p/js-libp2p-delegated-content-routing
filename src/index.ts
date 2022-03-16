@@ -2,9 +2,14 @@ import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import PQueue from 'p-queue'
 import defer from 'p-defer'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { Multiaddr } from '@multiformats/multiaddr'
+import errCode from 'err-code'
 import type { IPFSHTTPClient, CID } from 'ipfs-http-client'
 import type { HTTPClientExtraOptions } from 'ipfs-http-client/types/src/types'
 import type { AbortOptions } from 'ipfs-core-types/src/utils'
+import type { ContentRouting } from '@libp2p/interfaces/content-routing'
+import type { PeerData } from '@libp2p/interfaces/peer-data'
 
 const log = logger('libp2p-delegated-content-routing')
 
@@ -15,7 +20,7 @@ const CONCURRENT_HTTP_REFS_REQUESTS = 2
 /**
  * An implementation of content routing, using a delegated peer
  */
-export class DelegatedContentRouting {
+export class DelegatedContentRouting implements ContentRouting {
   private readonly client: IPFSHTTPClient
   private readonly httpQueue: PQueue
   private readonly httpQueueRefs: PQueue
@@ -70,9 +75,21 @@ export class DelegatedContentRouting {
     try {
       await onStart.promise
 
-      yield * this.client.dht.findProvs(key, {
+      for await (const event of this.client.dht.findProvs(key, {
         timeout: options.timeout
-      })
+      })) {
+        if (event.name === 'PROVIDER') {
+          yield * event.providers.map(prov => {
+            const peerData: PeerData = {
+              id: peerIdFromString(prov.id),
+              protocols: [],
+              multiaddrs: prov.multiaddrs.map(m => new Multiaddr(m.toString()))
+            }
+
+            return peerData
+          })
+        }
+      }
     } catch (err) {
       log.error('findProviders errored:', err)
       throw err
@@ -101,5 +118,42 @@ export class DelegatedContentRouting {
       await drain(this.client.dht.provide(key))
     })
     log('provide finished: %c', key)
+  }
+
+  /**
+   * Stores a value in the backing key/value store of the delegated content router.
+   * This may fail if the delegated node's content routing implementation does not
+   * use a key/value store, or if the delegated operation fails.
+   */
+  async put (key: Uint8Array, value: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
+    const timeout = options.timeout ?? 3000
+    log('put value start: %b', key)
+
+    await this.httpQueue.add(async () => {
+      await drain(this.client.dht.put(key, value, { timeout }))
+    })
+
+    log('put value finished: %b', key)
+  }
+
+  /**
+   * Fetches an value from the backing key/value store of the delegated content router.
+   * This may fail if the delegated node's content routing implementation does not
+   * use a key/value store, or if the delegated operation fails.
+   */
+  async get (key: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
+    const timeout = options.timeout ?? 3000
+    log('get value start: %b', key)
+
+    return await this.httpQueue.add(async () => {
+      for await (const event of this.client.dht.get(key, { timeout })) {
+        if (event.name === 'VALUE') {
+          log('get value finished: %b', key)
+          return event.value
+        }
+      }
+
+      throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
+    })
   }
 }

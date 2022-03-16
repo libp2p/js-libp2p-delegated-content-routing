@@ -124,14 +124,7 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       }))
 
-      const events = await all(routing.findProviders(cid))
-      const providers: PeerData[] = []
-
-      for (const event of events) {
-        if (event.name === 'PEER_RESPONSE') {
-          providers.push(...event.providers)
-        }
-      }
+      const providers = await all(routing.findProviders(cid))
 
       // We should get the bootstrap node as provider
       // The delegate node is not included, because it is handling the requests
@@ -147,14 +140,7 @@ describe('DelegatedContentRouting', function () {
         host: opts.host
       }))
 
-      const events = await all(routing.findProviders(cid, { timeout: 5e3 }))
-      const providers: PeerData[] = []
-
-      for (const event of events) {
-        if (event.name === 'PEER_RESPONSE') {
-          providers.push(...event.providers)
-        }
-      }
+      const providers = await all(routing.findProviders(cid, { timeout: 5e3 }))
 
       expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id, 'Did not include bootstrap node')
     })
@@ -210,6 +196,63 @@ describe('DelegatedContentRouting', function () {
 
       // We are hosting the file, validate we're the provider
       expect(providers.map((p) => p.id)).to.include(selfId.toString(), 'Did not include self node')
+    })
+  })
+
+  describe('get', () => {
+    it('should get a value', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const contentRouter = new DelegatedContentRouting(create({
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      }))
+
+      const cid = await selfNode.api.dag.put(`hello-${Math.random()}`, {
+        storeCodec: 'dag-cbor',
+        hashAlg: 'sha2-256'
+      })
+
+      const ipnsRecord = await delegateNode.api.name.publish(cid)
+      const key = uint8ArrayFromString(`/ipns/${ipnsRecord.name}`)
+      const record = await contentRouter.get(key)
+
+      expect(record).to.be.ok()
+    })
+  })
+
+  describe('put', () => {
+    it('should put a value', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const contentRouter = new DelegatedContentRouting(create({
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      }))
+
+      const cid = await selfNode.api.dag.put(`hello-${Math.random()}`, {
+        storeCodec: 'dag-cbor',
+        hashAlg: 'sha2-256'
+      })
+
+      const ipnsRecord = await selfNode.api.name.publish(cid)
+      const key = uint8ArrayFromString(`/ipns/${ipnsRecord.name}`)
+
+      let record: Uint8Array | undefined
+
+      for await (const event of selfNode.api.dht.get(key)) {
+        if (event.name === 'VALUE') {
+          record = event.value
+        }
+      }
+
+      if (record == null) {
+        throw new Error('Could not load IPNS record')
+      }
+
+      await contentRouter.put(key, record)
+
+      expect(await contentRouter.get(key)).to.equalBytes(record)
     })
   })
 })
