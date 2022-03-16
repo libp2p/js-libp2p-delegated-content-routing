@@ -149,10 +149,7 @@ export class DelegatedContentRouting implements ContentRouting {
       for await (const event of this.client.dht.get(key, { timeout })) {
         if (event.name === 'VALUE') {
           log('get value finished: %b', key)
-          return {
-            from: peerIdFromString(event.from),
-            val: event.value
-          }
+          return event.value
         }
       }
 
