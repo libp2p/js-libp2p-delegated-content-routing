@@ -80,13 +80,13 @@ export class DelegatedContentRouting implements ContentRouting {
       })) {
         if (event.name === 'PROVIDER') {
           yield * event.providers.map(prov => {
-            const PeerInfo: PeerInfo = {
+            const peerInfo: PeerInfo = {
               id: peerIdFromString(prov.id),
               protocols: [],
               multiaddrs: prov.multiaddrs.map(m => new Multiaddr(m.toString()))
             }
 
-            return PeerInfo
+            return peerInfo
           })
         }
       }
