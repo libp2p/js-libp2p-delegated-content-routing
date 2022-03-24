@@ -9,7 +9,7 @@ import type { IPFSHTTPClient, CID } from 'ipfs-http-client'
 import type { HTTPClientExtraOptions } from 'ipfs-http-client/types/src/types'
 import type { AbortOptions } from 'ipfs-core-types/src/utils'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
-import type { PeerData } from '@libp2p/interfaces/peer-data'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 const log = logger('libp2p-delegated-content-routing')
 
@@ -80,13 +80,13 @@ export class DelegatedContentRouting implements ContentRouting {
       })) {
         if (event.name === 'PROVIDER') {
           yield * event.providers.map(prov => {
-            const peerData: PeerData = {
+            const peerInfo: PeerInfo = {
               id: peerIdFromString(prov.id),
               protocols: [],
               multiaddrs: prov.multiaddrs.map(m => new Multiaddr(m.toString()))
             }
 
-            return peerData
+            return peerInfo
           })
         }
       }
