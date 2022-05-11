@@ -5,13 +5,15 @@ import defer from 'p-defer'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { Multiaddr } from '@multiformats/multiaddr'
 import errCode from 'err-code'
+import anySignal from 'any-signal'
 import type { IPFSHTTPClient, CID } from 'ipfs-http-client'
 import type { HTTPClientExtraOptions } from 'ipfs-http-client/types/src/types'
 import type { AbortOptions } from 'ipfs-core-types/src/utils'
 import type { ContentRouting } from '@libp2p/interfaces/content-routing'
 import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { Startable } from '@libp2p/interfaces/startable'
 
-const log = logger('libp2p-delegated-content-routing')
+const log = logger('libp2p:delegated-content-routing')
 
 const DEFAULT_TIMEOUT = 30e3 // 30 second default
 const CONCURRENT_HTTP_REQUESTS = 4
@@ -20,10 +22,12 @@ const CONCURRENT_HTTP_REFS_REQUESTS = 2
 /**
  * An implementation of content routing, using a delegated peer
  */
-export class DelegatedContentRouting implements ContentRouting {
+export class DelegatedContentRouting implements ContentRouting, Startable {
   private readonly client: IPFSHTTPClient
   private readonly httpQueue: PQueue
   private readonly httpQueueRefs: PQueue
+  private started: boolean
+  private abortController: AbortController
 
   /**
    * Create a new DelegatedContentRouting instance
@@ -34,6 +38,8 @@ export class DelegatedContentRouting implements ContentRouting {
     }
 
     this.client = client
+    this.started = false
+    this.abortController = new AbortController()
 
     // limit concurrency to avoid request flood in web browser
     // https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/12
@@ -55,6 +61,22 @@ export class DelegatedContentRouting implements ContentRouting {
     log(`enabled DelegatedContentRouting via ${protocol}://${host}:${port}`)
   }
 
+  isStarted () {
+    return this.started
+  }
+
+  start () {
+    this.started = true
+  }
+
+  stop () {
+    this.httpQueue.clear()
+    this.httpQueueRefs.clear()
+    this.abortController.abort()
+    this.abortController = new AbortController()
+    this.started = false
+  }
+
   /**
    * Search the dht for providers of the given CID.
    *
@@ -63,6 +85,7 @@ export class DelegatedContentRouting implements ContentRouting {
   async * findProviders (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}) {
     log('findProviders starts: %c', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
+    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
     const onStart = defer()
     const onFinish = defer()
@@ -75,9 +98,7 @@ export class DelegatedContentRouting implements ContentRouting {
     try {
       await onStart.promise
 
-      for await (const event of this.client.dht.findProvs(key, {
-        timeout: options.timeout
-      })) {
+      for await (const event of this.client.dht.findProvs(key, options)) {
         if (event.name === 'PROVIDER') {
           yield * event.providers.map(prov => {
             const peerInfo: PeerInfo = {
@@ -111,11 +132,14 @@ export class DelegatedContentRouting implements ContentRouting {
    * the delegate will only be able to supply the root block of the dag when asked
    * for the data by an interested peer.
    */
-  async provide (key: CID) {
+  async provide (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}) {
     log('provide starts: %c', key)
+    options.timeout = options.timeout ?? DEFAULT_TIMEOUT
+    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
+
     await this.httpQueueRefs.add(async () => {
-      await this.client.block.stat(key)
-      await drain(this.client.dht.provide(key))
+      await this.client.block.stat(key, options)
+      await drain(this.client.dht.provide(key, options))
     })
     log('provide finished: %c', key)
   }
@@ -126,11 +150,12 @@ export class DelegatedContentRouting implements ContentRouting {
    * use a key/value store, or if the delegated operation fails.
    */
   async put (key: Uint8Array, value: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
-    const timeout = options.timeout ?? 3000
     log('put value start: %b', key)
+    options.timeout = options.timeout ?? DEFAULT_TIMEOUT
+    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
     await this.httpQueue.add(async () => {
-      await drain(this.client.dht.put(key, value, { timeout }))
+      await drain(this.client.dht.put(key, value, options))
     })
 
     log('put value finished: %b', key)
@@ -142,11 +167,12 @@ export class DelegatedContentRouting implements ContentRouting {
    * use a key/value store, or if the delegated operation fails.
    */
   async get (key: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
-    const timeout = options.timeout ?? 3000
     log('get value start: %b', key)
+    options.timeout = options.timeout ?? DEFAULT_TIMEOUT
+    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
     return await this.httpQueue.add(async () => {
-      for await (const event of this.client.dht.get(key, { timeout })) {
+      for await (const event of this.client.dht.get(key, options)) {
         if (event.name === 'VALUE') {
           log('get value finished: %b', key)
           return event.value

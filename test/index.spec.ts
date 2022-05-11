@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { expect } from 'aegir/utils/chai.js'
+import { expect } from 'aegir/chai'
 import { Controller, createFactory } from 'ipfsd-ctl'
 import { create, CID } from 'ipfs-http-client'
 import all from 'it-all'
@@ -10,6 +10,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DelegatedContentRouting } from '../src/index.js'
 // @ts-expect-error no types
 import goIpfs from 'go-ipfs'
+import pDefer from 'p-defer'
 import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { IDResult } from 'ipfs-core-types/src/root'
@@ -253,6 +254,32 @@ describe('DelegatedContentRouting', function () {
       await contentRouter.put(key, record)
 
       expect(await contentRouter.get(key)).to.equalBytes(record)
+    })
+  })
+
+  describe('stop', () => {
+    it('should cancel in-flight requests when stopping', async () => {
+      const opts = delegateNode.apiAddr.toOptions()
+      const contentRouter = new DelegatedContentRouting(create({
+        protocol: 'http',
+        port: opts.port,
+        host: opts.host
+      }))
+
+      const deferred = pDefer<Error>()
+      // non-existent CID
+      const cid = CID.parse('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBs')
+
+      void drain(contentRouter.findProviders(cid))
+        .then(() => {
+          deferred.reject(new Error('Did not abort'))
+        })
+        .catch(err => {
+          deferred.resolve(err)
+        })
+
+      await contentRouter.stop()
+      await expect(deferred.promise).to.eventually.have.property('message').that.matches(/aborted/)
     })
   })
 })
