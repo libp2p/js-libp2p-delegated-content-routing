@@ -39,6 +39,7 @@ export class DelegatedContentRouting implements ContentRouting, Startable {
 
     this.client = client
     this.started = false
+    this.abortController = new AbortController()
 
     // limit concurrency to avoid request flood in web browser
     // https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/12
@@ -58,8 +59,6 @@ export class DelegatedContentRouting implements ContentRouting, Startable {
     } = client.getEndpointConfig()
 
     log(`enabled DelegatedContentRouting via ${protocol}://${host}:${port}`)
-
-    this.abortController = new AbortController()
   }
 
   isStarted () {
