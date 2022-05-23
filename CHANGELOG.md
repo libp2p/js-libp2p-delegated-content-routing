@@ -1,3 +1,10 @@
+### [1.0.4](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v1.0.3...v1.0.4) (2022-05-23)
+
+
+### Trivial Changes
+
+* **deps:** bump @libp2p/interfaces from 1.3.32 to 2.0.1 ([#79](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/79)) ([fcbcc1b](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/fcbcc1b843333a87afe7b314fe00e8dc252db2af))
+
 ### [1.0.3](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v1.0.2...v1.0.3) (2022-05-11)
 
 
