@@ -143,7 +143,7 @@
   "devDependencies": {
     "aegir": "^37.0.15",
     "go-ipfs": "^0.12.0",
-    "ipfs-core-types": "^0.10.1",
+    "ipfs-core-types": "^0.11.0",
     "ipfs-http-client": "^56.0.1",
     "ipfsd-ctl": "^11.0.0",
     "it-all": "^1.0.6",
