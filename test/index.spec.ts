@@ -11,10 +11,9 @@ import { DelegatedContentRouting } from '../src/index.js'
 // @ts-expect-error no types
 import goIpfs from 'go-ipfs'
 import pDefer from 'p-defer'
-import { peerIdFromString } from '@libp2p/peer-id'
 import type { PeerId } from '@libp2p/interfaces/peer-id'
 import type { IDResult } from 'ipfs-core-types/src/root'
-import type { PeerData } from 'ipfs-core-types/src/dht/index.js'
+import type { PeerInfo } from '@libp2p/interfaces/peer-info'
 
 const factory = createFactory({
   type: 'go',
@@ -65,7 +64,7 @@ describe('DelegatedContentRouting', function () {
     // Spawn our local node and bootstrap the bootstrapper node
     const self = await spawnNode(bootstrapId.addresses)
     selfNode = self.node
-    selfId = peerIdFromString(self.id.id)
+    selfId = self.id.id
 
     // Spawn the delegate node and bootstrap the bootstrapper node
     const delegate = await spawnNode(bootstrapId.addresses)
@@ -129,7 +128,7 @@ describe('DelegatedContentRouting', function () {
 
       // We should get the bootstrap node as provider
       // The delegate node is not included, because it is handling the requests
-      expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id, 'Did not include bootstrap node')
+      expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id.toString(), 'Did not include bootstrap node')
       expect(providers.map((p) => p.id.toString())).to.include(selfId.toString(), 'Did not include self node')
     })
 
@@ -143,7 +142,7 @@ describe('DelegatedContentRouting', function () {
 
       const providers = await all(routing.findProviders(cid, { timeout: 5e3 }))
 
-      expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id, 'Did not include bootstrap node')
+      expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id.toString(), 'Did not include bootstrap node')
     })
   })
 
@@ -160,7 +159,7 @@ describe('DelegatedContentRouting', function () {
 
       await contentRouter.provide(cid)
 
-      const providers: PeerData[] = []
+      const providers: PeerInfo[] = []
 
       for await (const event of delegateNode.api.dht.findProvs(cid)) {
         if (event.name === 'PEER_RESPONSE') {
@@ -169,7 +168,7 @@ describe('DelegatedContentRouting', function () {
       }
 
       // We are hosting the file, validate we're the provider
-      expect(providers.map((p) => p.id)).to.include(selfId.toString(), 'Did not include self node')
+      expect(providers.map((p) => p.id.toString())).to.include(selfId.toString(), 'Did not include self node')
     })
 
     it('should provide non-dag-pb nodes via the delegate node', async () => {
@@ -187,7 +186,7 @@ describe('DelegatedContentRouting', function () {
 
       await contentRouter.provide(cid)
 
-      const providers: PeerData[] = []
+      const providers: PeerInfo[] = []
 
       for await (const event of delegateNode.api.dht.findProvs(cid)) {
         if (event.name === 'PEER_RESPONSE') {
@@ -196,7 +195,7 @@ describe('DelegatedContentRouting', function () {
       }
 
       // We are hosting the file, validate we're the provider
-      expect(providers.map((p) => p.id)).to.include(selfId.toString(), 'Did not include self node')
+      expect(providers.map((p) => p.id.toString())).to.include(selfId.toString(), 'Did not include self node')
     })
   })
 
