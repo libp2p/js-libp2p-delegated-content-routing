@@ -1,3 +1,10 @@
+### [1.0.5](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v1.0.4...v1.0.5) (2022-06-06)
+
+
+### Bug Fixes
+
+* update ipfs-http-client ([#83](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/83)) ([7a7be0c](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/7a7be0ce67eb13cabc1685ec839a89ba5fdfb2d5))
+
 ### [1.0.4](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v1.0.3...v1.0.4) (2022-05-23)
 
 
