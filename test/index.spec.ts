@@ -11,9 +11,9 @@ import { DelegatedContentRouting } from '../src/index.js'
 // @ts-expect-error no types
 import goIpfs from 'go-ipfs'
 import pDefer from 'p-defer'
-import type { PeerId } from '@libp2p/interfaces/peer-id'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { IDResult } from 'ipfs-core-types/src/root'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 
 const factory = createFactory({
   type: 'go',
