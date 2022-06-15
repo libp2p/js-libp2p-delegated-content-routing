@@ -2,13 +2,13 @@ import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import PQueue from 'p-queue'
 import defer from 'p-defer'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import errCode from 'err-code'
 import anySignal from 'any-signal'
 import type { IPFSHTTPClient, CID, HTTPClientExtraOptions } from 'ipfs-http-client'
 import type { AbortOptions } from 'ipfs-core-types/src/utils'
-import type { ContentRouting } from '@libp2p/interfaces/content-routing'
-import type { PeerInfo } from '@libp2p/interfaces/peer-info'
+import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Startable } from '@libp2p/interfaces/startable'
 
 const log = logger('libp2p:delegated-content-routing')
@@ -102,7 +102,8 @@ export class DelegatedContentRouting implements ContentRouting, Startable {
             const peerInfo: PeerInfo = {
               id: prov.id,
               protocols: [],
-              multiaddrs: prov.multiaddrs.map(m => new Multiaddr(m.toString()))
+              // @ts-expect-error ipfs-core-types need updating
+              multiaddrs: prov.multiaddrs.map(m => multiaddr(m.toString()))
             }
 
             return peerInfo
