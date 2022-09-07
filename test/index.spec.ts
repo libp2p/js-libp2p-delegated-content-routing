@@ -5,7 +5,7 @@ import { Controller, createFactory } from 'ipfsd-ctl'
 import { create, CID } from 'ipfs-http-client'
 import all from 'it-all'
 import drain from 'it-drain'
-import { isNode } from 'wherearewe'
+import { isElectronMain, isNode } from 'wherearewe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DelegatedContentRouting } from '../src/index.js'
 // @ts-expect-error no types
@@ -18,7 +18,7 @@ import type { PeerInfo } from '@libp2p/interface-peer-info'
 const factory = createFactory({
   type: 'go',
   ipfsHttpModule: { create },
-  ipfsBin: isNode ? goIpfs.path() : undefined,
+  ipfsBin: isNode || isElectronMain ? goIpfs.path() : undefined,
   test: true,
   endpoint: 'http://localhost:57483'
 })
