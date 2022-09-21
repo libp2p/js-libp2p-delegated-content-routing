@@ -1,3 +1,16 @@
+## [2.0.2](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v2.0.1...v2.0.2) (2022-09-21)
+
+
+### Bug Fixes
+
+* update all deps ([#100](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/100)) ([253263d](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/253263d0e70d204ff8243d2d1bff123c7b8d318b))
+
+
+### Trivial Changes
+
+* Update .github/workflows/stale.yml [skip ci] ([7c4e725](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/7c4e725753f569a3002c2900205ec077dff3bd65))
+* update deps ([#99](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/99)) ([b4ea958](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/b4ea95883c90b5ff1173a7d13f09fdc2012851aa))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v2.0.0...v2.0.1) (2022-06-15)
 
 
