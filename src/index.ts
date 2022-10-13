@@ -4,11 +4,13 @@ import PQueue from 'p-queue'
 import defer from 'p-defer'
 import errCode from 'err-code'
 import anySignal from 'any-signal'
-import type { IPFSHTTPClient, CID, HTTPClientExtraOptions } from 'ipfs-http-client'
+import { CID as IPFSCCID } from 'ipfs-http-client'
+import type { IPFSHTTPClient, HTTPClientExtraOptions } from 'ipfs-http-client'
 import type { AbortOptions } from 'ipfs-core-types/src/utils'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Startable } from '@libp2p/interfaces/startable'
+import type { CID } from 'multiformats/cid'
 
 const log = logger('libp2p:delegated-content-routing')
 
@@ -19,7 +21,7 @@ const CONCURRENT_HTTP_REFS_REQUESTS = 2
 /**
  * An implementation of content routing, using a delegated peer
  */
-export class DelegatedContentRouting implements ContentRouting, Startable {
+class DelegatedContentRouting implements ContentRouting, Startable {
   private readonly client: IPFSHTTPClient
   private readonly httpQueue: PQueue
   private readonly httpQueueRefs: PQueue
@@ -95,7 +97,10 @@ export class DelegatedContentRouting implements ContentRouting, Startable {
     try {
       await onStart.promise
 
-      for await (const event of this.client.dht.findProvs(key, options)) {
+      // can be removed after ipfs ships with multiformats@10.x.x
+      const ipfsCid = IPFSCCID.parse(key.toString())
+
+      for await (const event of this.client.dht.findProvs(ipfsCid, options)) {
         if (event.name === 'PROVIDER') {
           yield * event.providers.map(prov => {
             const peerInfo: PeerInfo = {
@@ -134,9 +139,12 @@ export class DelegatedContentRouting implements ContentRouting, Startable {
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
     options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
+    // can be removed after ipfs ships with multiformats@10.x.x
+    const ipfsCid = IPFSCCID.parse(key.toString())
+
     await this.httpQueueRefs.add(async () => {
-      await this.client.block.stat(key, options)
-      await drain(this.client.dht.provide(key, options))
+      await this.client.block.stat(ipfsCid, options)
+      await drain(this.client.dht.provide(ipfsCid, options))
     })
     log('provide finished: %c', key)
   }
@@ -179,4 +187,8 @@ export class DelegatedContentRouting implements ContentRouting, Startable {
       throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
     })
   }
+}
+
+export function delegatedContentRouting (client: IPFSHTTPClient): (components?: any) => ContentRouting {
+  return () => new DelegatedContentRouting(client)
 }
