@@ -13,14 +13,14 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:delegated-content-routing')
 
+const DEFAULT_TIMEOUT = 30e3 // 30 second default
+const CONCURRENT_HTTP_REQUESTS = 4
+const CONCURRENT_HTTP_REFS_REQUESTS = 2
+
 export interface HTTPClientExtraOptions {
   headers?: Record<string, string>
   searchParams?: URLSearchParams
 }
-
-const DEFAULT_TIMEOUT = 30e3 // 30 second default
-const CONCURRENT_HTTP_REQUESTS = 4
-const CONCURRENT_HTTP_REFS_REQUESTS = 2
 
 export enum EventTypes {
   SENDING_QUERY = 0,
@@ -36,7 +36,7 @@ export enum EventTypes {
 /**
  * The types of messages set/received during DHT queries
  */
- export enum MessageType {
+export enum MessageType {
   PUT_VALUE = 0,
   GET_VALUE,
   ADD_PROVIDER,
@@ -124,7 +124,7 @@ export interface Delegate {
   }
 
   dht: {
-    findProvs: (cid: CID, options?: AbortOptions ) => AsyncIterable<QueryEvent>
+    findProvs: (cid: CID, options?: AbortOptions) => AsyncIterable<QueryEvent>
     provide: (cid: CID, options?: DHTProvideOptions) => AsyncIterable<QueryEvent>
     put: (key: string | Uint8Array, value: Uint8Array, options?: AbortOptions) => AsyncIterable<QueryEvent>
     get: (key: string | Uint8Array, options?: AbortOptions) => AsyncIterable<QueryEvent>
