@@ -124,10 +124,10 @@ export interface Delegate {
   }
 
   dht: {
-    findProvs: (cid: CID, options?: AbortOptions) => AsyncIterable<QueryEvent>
-    provide: (cid: CID, options?: DHTProvideOptions) => AsyncIterable<QueryEvent>
-    put: (key: string | Uint8Array, value: Uint8Array, options?: AbortOptions) => AsyncIterable<QueryEvent>
-    get: (key: string | Uint8Array, options?: AbortOptions) => AsyncIterable<QueryEvent>
+    findProvs: (cid: CID, options?: HTTPClientExtraOptions & AbortOptions) => AsyncIterable<QueryEvent>
+    provide: (cid: CID, options?: HTTPClientExtraOptions & DHTProvideOptions) => AsyncIterable<QueryEvent>
+    put: (key: string | Uint8Array, value: Uint8Array, options?: HTTPClientExtraOptions & AbortOptions) => AsyncIterable<QueryEvent>
+    get: (key: string | Uint8Array, options?: HTTPClientExtraOptions & AbortOptions) => AsyncIterable<QueryEvent>
   }
 }
 
