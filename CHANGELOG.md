@@ -1,3 +1,14 @@
+## [3.0.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v2.0.2...v3.0.0) (2022-10-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* modules no longer implement `Initializable` instead switching to constructor injection
+
+### Bug Fixes
+
+* remove @libp2p/components ([#102](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/102)) ([782f6cf](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/782f6cff60378b709a76f1c9408347c8f24529f4))
+
 ## [2.0.2](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v2.0.1...v2.0.2) (2022-09-21)
 
 
