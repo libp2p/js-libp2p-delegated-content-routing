@@ -4,25 +4,138 @@ import PQueue from 'p-queue'
 import defer from 'p-defer'
 import errCode from 'err-code'
 import anySignal from 'any-signal'
-import { CID as IPFSCCID } from 'ipfs-http-client'
-import type { IPFSHTTPClient, HTTPClientExtraOptions } from 'ipfs-http-client'
 import type { AbortOptions } from 'ipfs-core-types/src/utils'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { CID } from 'multiformats/cid'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:delegated-content-routing')
+
+export interface HTTPClientExtraOptions {
+  headers?: Record<string, string>
+  searchParams?: URLSearchParams
+}
 
 const DEFAULT_TIMEOUT = 30e3 // 30 second default
 const CONCURRENT_HTTP_REQUESTS = 4
 const CONCURRENT_HTTP_REFS_REQUESTS = 2
 
+export enum EventTypes {
+  SENDING_QUERY = 0,
+  PEER_RESPONSE,
+  FINAL_PEER,
+  QUERY_ERROR,
+  PROVIDER,
+  VALUE,
+  ADDING_PEER,
+  DIALING_PEER
+}
+
+/**
+ * The types of messages set/received during DHT queries
+ */
+ export enum MessageType {
+  PUT_VALUE = 0,
+  GET_VALUE,
+  ADD_PROVIDER,
+  GET_PROVIDERS,
+  FIND_NODE,
+  PING
+}
+
+export type MessageName = keyof typeof MessageType
+
+export interface DHTRecord {
+  key: Uint8Array
+  value: Uint8Array
+  timeReceived?: Date
+}
+
+export interface SendingQueryEvent {
+  type: EventTypes.SENDING_QUERY
+  name: 'SENDING_QUERY'
+}
+
+export interface PeerResponseEvent {
+  from: PeerId
+  type: EventTypes.PEER_RESPONSE
+  name: 'PEER_RESPONSE'
+  messageType: MessageType
+  messageName: MessageName
+  providers: PeerInfo[]
+  closer: PeerInfo[]
+  record?: DHTRecord
+}
+
+export interface FinalPeerEvent {
+  peer: PeerInfo
+  type: EventTypes.FINAL_PEER
+  name: 'FINAL_PEER'
+}
+
+export interface QueryErrorEvent {
+  type: EventTypes.QUERY_ERROR
+  name: 'QUERY_ERROR'
+  error: Error
+}
+
+export interface ProviderEvent {
+  type: EventTypes.PROVIDER
+  name: 'PROVIDER'
+  providers: PeerInfo[]
+}
+
+export interface ValueEvent {
+  type: EventTypes.VALUE
+  name: 'VALUE'
+  value: Uint8Array
+}
+
+export interface AddingPeerEvent {
+  type: EventTypes.ADDING_PEER
+  name: 'ADDING_PEER'
+  peer: PeerId
+}
+
+export interface DialingPeerEvent {
+  peer: PeerId
+  type: EventTypes.DIALING_PEER
+  name: 'DIALING_PEER'
+}
+
+export type QueryEvent = SendingQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddingPeerEvent | DialingPeerEvent
+
+export interface DHTProvideOptions extends AbortOptions {
+  recursive?: boolean
+}
+
+export interface StatResult {
+  cid: CID
+  size: number
+}
+
+export interface Delegate {
+  getEndpointConfig: () => { protocol: string, host: string, port: string }
+
+  block: {
+    stat: (cid: CID, options?: AbortOptions) => Promise<StatResult>
+  }
+
+  dht: {
+    findProvs: (cid: CID, options?: AbortOptions ) => AsyncIterable<QueryEvent>
+    provide: (cid: CID, options?: DHTProvideOptions) => AsyncIterable<QueryEvent>
+    put: (key: string | Uint8Array, value: Uint8Array, options?: AbortOptions) => AsyncIterable<QueryEvent>
+    get: (key: string | Uint8Array, options?: AbortOptions) => AsyncIterable<QueryEvent>
+  }
+}
+
 /**
  * An implementation of content routing, using a delegated peer
  */
 class DelegatedContentRouting implements ContentRouting, Startable {
-  private readonly client: IPFSHTTPClient
+  private readonly client: Delegate
   private readonly httpQueue: PQueue
   private readonly httpQueueRefs: PQueue
   private started: boolean
@@ -31,7 +144,7 @@ class DelegatedContentRouting implements ContentRouting, Startable {
   /**
    * Create a new DelegatedContentRouting instance
    */
-  constructor (client: IPFSHTTPClient) {
+  constructor (client: Delegate) {
     if (client == null) {
       throw new Error('missing ipfs http client')
     }
@@ -97,10 +210,7 @@ class DelegatedContentRouting implements ContentRouting, Startable {
     try {
       await onStart.promise
 
-      // can be removed after ipfs ships with multiformats@10.x.x
-      const ipfsCid = IPFSCCID.parse(key.toString())
-
-      for await (const event of this.client.dht.findProvs(ipfsCid, options)) {
+      for await (const event of this.client.dht.findProvs(key, options)) {
         if (event.name === 'PROVIDER') {
           yield * event.providers.map(prov => {
             const peerInfo: PeerInfo = {
@@ -139,12 +249,9 @@ class DelegatedContentRouting implements ContentRouting, Startable {
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
     options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
-    // can be removed after ipfs ships with multiformats@10.x.x
-    const ipfsCid = IPFSCCID.parse(key.toString())
-
     await this.httpQueueRefs.add(async () => {
-      await this.client.block.stat(ipfsCid, options)
-      await drain(this.client.dht.provide(ipfsCid, options))
+      await this.client.block.stat(key, options)
+      await drain(this.client.dht.provide(key, options))
     })
     log('provide finished: %c', key)
   }
@@ -189,6 +296,6 @@ class DelegatedContentRouting implements ContentRouting, Startable {
   }
 }
 
-export function delegatedContentRouting (client: IPFSHTTPClient): (components?: any) => ContentRouting {
+export function delegatedContentRouting (client: Delegate): (components?: any) => ContentRouting {
   return () => new DelegatedContentRouting(client)
 }

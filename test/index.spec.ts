@@ -2,7 +2,7 @@
 
 import { expect } from 'aegir/chai'
 import { Controller, createFactory } from 'ipfsd-ctl'
-import { create, CID as IPFSCCID } from 'ipfs-http-client'
+import { create, Options, CID as IPFSCID } from 'ipfs-http-client'
 import all from 'it-all'
 import drain from 'it-drain'
 import { isElectronMain, isNode } from 'wherearewe'
@@ -17,6 +17,7 @@ import type { IDResult } from 'ipfs-core-types/src/root'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { stop } from '@libp2p/interfaces/startable'
 import { TimeoutController } from 'timeout-abort-controller'
+import type { AbortOptions } from '@libp2p/interfaces'
 
 const factory = createFactory({
   type: 'go',
@@ -46,6 +47,38 @@ async function spawnNode (bootstrap: any[] = []) {
   return {
     node,
     id
+  }
+}
+
+function createIpfsClient (opts: Options) {
+  const client = create(opts)
+
+  return {
+    getEndpointConfig: () => client.getEndpointConfig(),
+    block: {
+      async stat (cid: CID, options?: AbortOptions) {
+        const result = await client.block.stat(IPFSCID.parse(cid.toString()), options)
+
+        return {
+          cid: CID.parse(result.cid.toString()),
+          size: result.size
+        }
+      }
+    },
+    dht: {
+      async * findProvs (cid: CID, options?: AbortOptions) {
+        yield * client.dht.findProvs(IPFSCID.parse(cid.toString()), options)
+      },
+      async * provide (cid: CID, options?: AbortOptions) {
+        yield * client.dht.provide(IPFSCID.parse(cid.toString()), options)
+      },
+      async * put (key: string | Uint8Array, value: Uint8Array, options?: AbortOptions) {
+        yield * client.dht.put(key, value, options)
+      },
+      async * get (key: string | Uint8Array, options?: AbortOptions) {
+        yield * client.dht.get(key, options)
+      }
+    }
   }
 }
 
@@ -85,7 +118,7 @@ describe('DelegatedContentRouting', function () {
     })
 
     it('should accept an http api client instance at construction time', () => {
-      const client = create({
+      const client = createIpfsClient({
         protocol: 'http',
         port: 8000,
         host: 'localhost'
@@ -106,7 +139,7 @@ describe('DelegatedContentRouting', function () {
 
   describe('findProviders', () => {
     const data = uint8ArrayFromString('some data')
-    const cid = IPFSCCID.parse('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
+    const cid = CID.parse('QmVv4Wz46JaZJeH5PMV4LGbRiiMKEmszPYY3g6fjGnVXBS') // 'some data'
 
     before('register providers', async () => {
       await Promise.all([
@@ -114,20 +147,20 @@ describe('DelegatedContentRouting', function () {
         selfNode.api.add(data)
       ])
       await Promise.all([
-        drain(bootstrapNode.api.dht.provide(cid)),
-        drain(selfNode.api.dht.provide(cid))
+        drain(bootstrapNode.api.dht.provide(IPFSCID.parse(cid.toString()))),
+        drain(selfNode.api.dht.provide(IPFSCID.parse(cid.toString())))
       ])
     })
 
     it('should be able to find providers through the delegate node', async function () {
       const opts = delegateNode.apiAddr.toOptions()
-      const routing = delegatedContentRouting(create({
+      const routing = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
       }))()
 
-      const providers = await all(routing.findProviders(CID.parse(cid.toString())))
+      const providers = await all(routing.findProviders(cid))
 
       // We should get the bootstrap node as provider
       // The delegate node is not included, because it is handling the requests
@@ -137,14 +170,14 @@ describe('DelegatedContentRouting', function () {
 
     it('should be able to specify a timeout', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const routing = delegatedContentRouting(create({
+      const routing = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
       }))()
       const controller = new TimeoutController(5e3)
 
-      const providers = await all(routing.findProviders(CID.parse(cid.toString()), { signal: controller.signal }))
+      const providers = await all(routing.findProviders(cid, { signal: controller.signal }))
 
       expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id.toString(), 'Did not include bootstrap node')
 
@@ -155,7 +188,7 @@ describe('DelegatedContentRouting', function () {
   describe('provide', () => {
     it('should be able to register as a content provider to the delegate node', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = delegatedContentRouting(create({
+      const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -179,7 +212,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should provide non-dag-pb nodes via the delegate node', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = delegatedContentRouting(create({
+      const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -208,7 +241,7 @@ describe('DelegatedContentRouting', function () {
   describe('get', () => {
     it('should get a value', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = delegatedContentRouting(create({
+      const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -230,7 +263,7 @@ describe('DelegatedContentRouting', function () {
   describe('put', () => {
     it('should put a value', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = delegatedContentRouting(create({
+      const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
@@ -265,7 +298,7 @@ describe('DelegatedContentRouting', function () {
   describe('stop', () => {
     it('should cancel in-flight requests when stopping', async () => {
       const opts = delegateNode.apiAddr.toOptions()
-      const contentRouter = delegatedContentRouting(create({
+      const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
         host: opts.host
