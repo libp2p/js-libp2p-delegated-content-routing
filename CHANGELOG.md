@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v3.0.0...v3.0.1) (2022-12-16)
+
+
+### Documentation
+
+* publish api docs ([#112](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/112)) ([621712d](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/621712de1407dc6ee06f026daed3a7c5e03a05ed))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v2.0.2...v3.0.0) (2022-10-13)
 
 
