@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v3.0.1...v4.0.0) (2023-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* update multiformats to v11 (#114)
+
+### Bug Fixes
+
+* update multiformats to v11 ([#114](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/114)) ([5b5cd1d](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/5b5cd1d2332266fdc799654812609a07b281e50a))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v3.0.0...v3.0.1) (2022-12-16)
 
 
