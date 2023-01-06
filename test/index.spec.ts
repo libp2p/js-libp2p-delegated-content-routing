@@ -18,6 +18,7 @@ import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { stop } from '@libp2p/interfaces/startable'
 import { TimeoutController } from 'timeout-abort-controller'
 import type { AbortOptions } from '@libp2p/interfaces'
+import { peerIdFromString } from '@libp2p/peer-id'
 
 const factory = createFactory({
   type: 'go',
@@ -100,7 +101,7 @@ describe('DelegatedContentRouting', function () {
     // Spawn our local node and bootstrap the bootstrapper node
     const self = await spawnNode(bootstrapId.addresses)
     selfNode = self.node
-    selfId = self.id.id
+    selfId = peerIdFromString(self.id.id.toString())
 
     // Spawn the delegate node and bootstrap the bootstrapper node
     const delegate = await spawnNode(bootstrapId.addresses)
@@ -123,6 +124,7 @@ describe('DelegatedContentRouting', function () {
         port: 8000,
         host: 'localhost'
       })
+      // @ts-expect-error ipfs-http-client types are out of date
       const router = delegatedContentRouting(client)()
 
       expect(router).to.have.property('client')
@@ -154,6 +156,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should be able to find providers through the delegate node', async function () {
       const opts = delegateNode.apiAddr.toOptions()
+      // @ts-expect-error ipfs-http-client types are out of date
       const routing = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
@@ -170,6 +173,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should be able to specify a timeout', async () => {
       const opts = delegateNode.apiAddr.toOptions()
+      // @ts-expect-error ipfs-http-client types are out of date
       const routing = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
@@ -188,6 +192,7 @@ describe('DelegatedContentRouting', function () {
   describe('provide', () => {
     it('should be able to register as a content provider to the delegate node', async () => {
       const opts = delegateNode.apiAddr.toOptions()
+      // @ts-expect-error ipfs-http-client types are out of date
       const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
@@ -212,6 +217,7 @@ describe('DelegatedContentRouting', function () {
 
     it('should provide non-dag-pb nodes via the delegate node', async () => {
       const opts = delegateNode.apiAddr.toOptions()
+      // @ts-expect-error ipfs-http-client types are out of date
       const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
@@ -241,6 +247,7 @@ describe('DelegatedContentRouting', function () {
   describe('get', () => {
     it('should get a value', async () => {
       const opts = delegateNode.apiAddr.toOptions()
+      // @ts-expect-error ipfs-http-client types are out of date
       const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
@@ -263,6 +270,7 @@ describe('DelegatedContentRouting', function () {
   describe('put', () => {
     it('should put a value', async () => {
       const opts = delegateNode.apiAddr.toOptions()
+      // @ts-expect-error ipfs-http-client types are out of date
       const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,
@@ -298,6 +306,7 @@ describe('DelegatedContentRouting', function () {
   describe('stop', () => {
     it('should cancel in-flight requests when stopping', async () => {
       const opts = delegateNode.apiAddr.toOptions()
+      // @ts-expect-error ipfs-http-client types are out of date
       const contentRouter = delegatedContentRouting(createIpfsClient({
         protocol: 'http',
         port: opts.port,

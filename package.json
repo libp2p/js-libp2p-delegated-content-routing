@@ -136,20 +136,21 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface-content-routing": "^1.0.2",
-    "@libp2p/interface-peer-id": "^1.0.4",
+    "@libp2p/interface-content-routing": "^2.0.0",
+    "@libp2p/interface-peer-id": "^2.0.0",
     "@libp2p/interface-peer-info": "^1.0.3",
     "@libp2p/interfaces": "^3.0.3",
     "@libp2p/logger": "^2.0.1",
     "any-signal": "^3.0.1",
     "err-code": "^3.0.1",
     "it-drain": "^2.0.0",
-    "multiformats": "^10.0.0",
+    "multiformats": "^11.0.0",
     "p-defer": "^4.0.0",
     "p-queue": "^7.2.0"
   },
   "devDependencies": {
-    "aegir": "^37.5.3",
+    "@libp2p/peer-id": "^2.0.0",
+    "aegir": "^37.9.1",
     "go-ipfs": "^0.17.0",
     "ipfs-core-types": "^0.13.0",
     "ipfs-http-client": "^59.0.0",
