@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.0...v4.0.1) (2023-02-14)
+
+
+### Dependencies
+
+* **dev:** upgrade aegir to `38.1.2` ([#124](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/124)) ([13477fe](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/13477fee25c23b64ab8871830eb60a8613a4d188))
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v3.0.1...v4.0.0) (2023-01-06)
 
 
