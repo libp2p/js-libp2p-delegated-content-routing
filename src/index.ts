@@ -173,15 +173,15 @@ class DelegatedContentRouting implements ContentRouting, Startable {
     log(`enabled DelegatedContentRouting via ${protocol}://${host}:${port}`)
   }
 
-  isStarted () {
+  isStarted (): boolean {
     return this.started
   }
 
-  start () {
+  start (): void {
     this.started = true
   }
 
-  stop () {
+  stop (): void {
     this.httpQueue.clear()
     this.httpQueueRefs.clear()
     this.abortController.abort()
@@ -194,7 +194,7 @@ class DelegatedContentRouting implements ContentRouting, Startable {
    *
    * - call `findProviders` on the delegated node.
    */
-  async * findProviders (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}) {
+  async * findProviders (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}): AsyncIterable<PeerInfo> {
     log('findProviders starts: %c', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
     options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
@@ -244,7 +244,7 @@ class DelegatedContentRouting implements ContentRouting, Startable {
    * the delegate will only be able to supply the root block of the dag when asked
    * for the data by an interested peer.
    */
-  async provide (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}) {
+  async provide (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}): Promise<void> {
     log('provide starts: %c', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
     options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
@@ -261,7 +261,7 @@ class DelegatedContentRouting implements ContentRouting, Startable {
    * This may fail if the delegated node's content routing implementation does not
    * use a key/value store, or if the delegated operation fails.
    */
-  async put (key: Uint8Array, value: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
+  async put (key: Uint8Array, value: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}): Promise<void> {
     log('put value start: %b', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
     options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
@@ -278,12 +278,12 @@ class DelegatedContentRouting implements ContentRouting, Startable {
    * This may fail if the delegated node's content routing implementation does not
    * use a key/value store, or if the delegated operation fails.
    */
-  async get (key: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}) {
+  async get (key: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}): Promise<Uint8Array> {
     log('get value start: %b', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
     options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
-    return await this.httpQueue.add(async () => {
+    const value = await this.httpQueue.add(async () => {
       for await (const event of this.client.dht.get(key, options)) {
         if (event.name === 'VALUE') {
           log('get value finished: %b', key)
@@ -293,6 +293,12 @@ class DelegatedContentRouting implements ContentRouting, Startable {
 
       throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
     })
+
+    if (value === undefined) {
+      throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
+    } else {
+      return value
+    }
   }
 }
 
