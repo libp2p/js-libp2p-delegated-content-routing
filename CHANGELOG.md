@@ -1,3 +1,10 @@
+## [4.0.3](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.2...v4.0.3) (2023-03-21)
+
+
+### Dependencies
+
+* **dev:** bump ipfs-http-client from 59.0.0 to 60.0.0 ([#116](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/116)) ([9d0d05b](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/9d0d05bf508020993de86a00a2ecae693a0bcc2c))
+
 ## [4.0.2](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.1...v4.0.2) (2023-03-21)
 
 
