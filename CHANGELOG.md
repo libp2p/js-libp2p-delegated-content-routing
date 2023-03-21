@@ -1,3 +1,17 @@
+## [4.0.2](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.1...v4.0.2) (2023-03-21)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([8fc0c06](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/8fc0c064a629f2be752e17709f7d49c1b6102f7f))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([8743c5a](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/8743c5a8ca47e1a7dae173757bc80b565b5dc5da))
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([458d70d](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/458d70d546987656df0cf6d79b7e5e47b76942ff))
+
+
+### Dependencies
+
+* **dev:** bump ipfsd-ctl from 12.2.2 to 13.0.0 ([#118](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/118)) ([851ba1c](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/851ba1c091aba9a404aa6baa4050e747def017c7))
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.0...v4.0.1) (2023-02-14)
 
 
