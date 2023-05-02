@@ -16,7 +16,6 @@ import type { PeerId } from '@libp2p/interface-peer-id'
 import type { IDResult } from 'ipfs-core-types/src/root'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import { stop } from '@libp2p/interfaces/startable'
-import { TimeoutController } from 'timeout-abort-controller'
 import type { AbortOptions } from '@libp2p/interfaces'
 import { peerIdFromString } from '@libp2p/peer-id'
 
@@ -179,13 +178,11 @@ describe('DelegatedContentRouting', function () {
         port: opts.port,
         host: opts.host
       }))()
-      const controller = new TimeoutController(5e3)
+      const signal = AbortSignal.timeout(5e3)
 
-      const providers = await all(routing.findProviders(cid, { signal: controller.signal }))
+      const providers = await all(routing.findProviders(cid, { signal }))
 
       expect(providers.map((p) => p.id.toString())).to.include(bootstrapId.id.toString(), 'Did not include bootstrap node')
-
-      controller.clear()
     })
   })
 
