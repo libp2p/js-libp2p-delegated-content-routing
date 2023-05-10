@@ -155,7 +155,7 @@
     "ipfs-core-types": "^0.14.0",
     "ipfs-http-client": "^60.0.0",
     "ipfsd-ctl": "^13.0.0",
-    "it-all": "^2.0.0",
+    "it-all": "^3.0.2",
     "uint8arrays": "^4.0.2",
     "wherearewe": "^2.0.1"
   },
