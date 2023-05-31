@@ -336,24 +336,17 @@ class DelegatedContentRouting implements ContentRouting, Startable {
     try {
       await onStart.promise
 
-      let value: Uint8Array | undefined
-
       for await (const event of this.client.dht.get(key, {
         ...options,
         signal
       })) {
         if (event.name === 'VALUE') {
           log('get value finished: %b', key)
-          value = event.value
-          break
+          return event.value
         }
       }
 
-      if (value === undefined) {
-        throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
-      }
-
-      return value
+      throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
     } catch (err) {
       log.error('put errored:', err)
       throw err
