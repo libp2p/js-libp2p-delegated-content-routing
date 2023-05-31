@@ -1,3 +1,10 @@
+## [4.0.5](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.4...v4.0.5) (2023-05-31)
+
+
+### Dependencies
+
+* swap ipfs-http-client for kubo-rpc-client ([#145](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/145)) ([2d92fb5](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/2d92fb5d93972f2b39393c02ce98391548669286))
+
 ## [4.0.4](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.3...v4.0.4) (2023-05-31)
 
 
