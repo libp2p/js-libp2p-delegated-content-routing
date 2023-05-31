@@ -37,10 +37,10 @@ Requires access to `/api/v0/dht/findprovs` and `/api/v0/refs` HTTP API endpoints
 
 ## Requirements
 
-`@libp2p/delegated-content-routing` leverages the `ipfs-http-client` library and requires an instance of it as a constructor argument.
+`@libp2p/delegated-content-routing` leverages the `kubo-rpc-client` library and requires an instance of it as a constructor argument.
 
 ```sh
-npm install ipfs-http-client @libp2p/delegated-content-routing
+npm install kubo-rpc-client @libp2p/delegated-content-routing
 ```
 
 ## Example
@@ -48,7 +48,7 @@ npm install ipfs-http-client @libp2p/delegated-content-routing
 ```js
 import { createLibp2p } from 'libp2p'
 import { delegatedContentRouting } from '@libp2p/delegated-content-routing'
-import { create as createIpfsHttpClient } from 'ipfs-http-client')
+import { create as createIpfsHttpClient } from 'kubo-rpc-client'
 
 // default is to use ipfs.io
 const client = createIpfsHttpClient({

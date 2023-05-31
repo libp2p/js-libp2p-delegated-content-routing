@@ -5,7 +5,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 // @ts-expect-error no types
 import goIpfs from 'go-ipfs'
-import { create, type Options, CID as IPFSCID } from 'ipfs-http-client'
+import { create, type Options, CID as IPFSCID } from 'kubo-rpc-client'
 import { type Controller, createFactory } from 'ipfsd-ctl'
 import all from 'it-all'
 import drain from 'it-drain'

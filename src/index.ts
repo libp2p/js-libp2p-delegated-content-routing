@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger'
-import anySignal from 'any-signal'
+import { anySignal } from 'any-signal'
 import errCode from 'err-code'
 import drain from 'it-drain'
 import defer from 'p-defer'
@@ -197,8 +197,8 @@ class DelegatedContentRouting implements ContentRouting, Startable {
   async * findProviders (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}): AsyncIterable<PeerInfo> {
     log('findProviders starts: %c', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
-    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
+    const signal = anySignal([this.abortController.signal, options.signal])
     const onStart = defer()
     const onFinish = defer()
 
@@ -210,7 +210,10 @@ class DelegatedContentRouting implements ContentRouting, Startable {
     try {
       await onStart.promise
 
-      for await (const event of this.client.dht.findProvs(key, options)) {
+      for await (const event of this.client.dht.findProvs(key, {
+        ...options,
+        signal
+      })) {
         if (event.name === 'PROVIDER') {
           yield * event.providers.map(prov => {
             const peerInfo: PeerInfo = {
@@ -227,6 +230,7 @@ class DelegatedContentRouting implements ContentRouting, Startable {
       log.error('findProviders errored:', err)
       throw err
     } finally {
+      signal.clear()
       onFinish.resolve()
       log('findProviders finished: %c', key)
     }
@@ -264,10 +268,17 @@ class DelegatedContentRouting implements ContentRouting, Startable {
   async put (key: Uint8Array, value: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}): Promise<void> {
     log('put value start: %b', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
-    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
+    const signal = anySignal([this.abortController.signal, options.signal])
 
     await this.httpQueue.add(async () => {
-      await drain(this.client.dht.put(key, value, options))
+      try {
+        await drain(this.client.dht.put(key, value, {
+          ...options,
+          signal
+        }))
+      } finally {
+        signal.clear()
+      }
     })
 
     log('put value finished: %b', key)
