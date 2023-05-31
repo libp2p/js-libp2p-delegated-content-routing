@@ -3,6 +3,7 @@
 import { stop } from '@libp2p/interfaces/startable'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+// @ts-expect-error no types
 import goIpfs from 'go-ipfs'
 import { create, type Options, CID as IPFSCID } from 'ipfs-http-client'
 import { type Controller, createFactory } from 'ipfsd-ctl'
@@ -13,7 +14,6 @@ import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { isElectronMain, isNode } from 'wherearewe'
 import { delegatedContentRouting } from '../src/index.js'
-// @ts-expect-error no types
 import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { AbortOptions } from '@libp2p/interfaces'
