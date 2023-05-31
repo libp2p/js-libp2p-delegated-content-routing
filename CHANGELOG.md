@@ -1,3 +1,17 @@
+## [4.0.4](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.3...v4.0.4) (2023-05-31)
+
+
+### Trivial Changes
+
+* remove use of timeout-abort-controller ([#134](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/134)) ([d2132ad](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/d2132ada408619f8bcbc9eac831d7e515769e012))
+
+
+### Dependencies
+
+* bump it-drain from 2.0.1 to 3.0.2 ([#137](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/137)) ([e2a7b5b](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/e2a7b5b9fbc1522900be863c44d9b7cfd29aca45))
+* **dev:** bump aegir from 38.1.8 to 39.0.9 ([#144](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/144)) ([695fc7c](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/695fc7c6c66b3337f06d4225e63a3db2a07de990))
+* **dev:** bump it-all from 2.0.1 to 3.0.2 ([#138](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/138)) ([73d7a87](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/73d7a870d420f2a2071545649afad76664b17704))
+
 ## [4.0.3](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.2...v4.0.3) (2023-03-21)
 
 
