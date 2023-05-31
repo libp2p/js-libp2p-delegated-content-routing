@@ -251,13 +251,34 @@ class DelegatedContentRouting implements ContentRouting, Startable {
   async provide (key: CID, options: HTTPClientExtraOptions & AbortOptions = {}): Promise<void> {
     log('provide starts: %c', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
-    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
+    const signal = anySignal([this.abortController.signal, options.signal])
+    const onStart = defer()
+    const onFinish = defer()
 
-    await this.httpQueueRefs.add(async () => {
-      await this.client.block.stat(key, options)
-      await drain(this.client.dht.provide(key, options))
+    void this.httpQueue.add(async () => {
+      onStart.resolve()
+      return onFinish.promise
     })
-    log('provide finished: %c', key)
+
+    try {
+      await onStart.promise
+
+      await this.client.block.stat(key, {
+        ...options,
+        signal
+      })
+      await drain(this.client.dht.provide(key, {
+        ...options,
+        signal
+      }))
+    } catch (err) {
+      log.error('provide errored:', err)
+      throw err
+    } finally {
+      signal.clear()
+      onFinish.resolve()
+      log('provide finished: %c', key)
+    }
   }
 
   /**
@@ -269,19 +290,29 @@ class DelegatedContentRouting implements ContentRouting, Startable {
     log('put value start: %b', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
     const signal = anySignal([this.abortController.signal, options.signal])
+    const onStart = defer()
+    const onFinish = defer()
 
-    await this.httpQueue.add(async () => {
-      try {
-        await drain(this.client.dht.put(key, value, {
-          ...options,
-          signal
-        }))
-      } finally {
-        signal.clear()
-      }
+    void this.httpQueue.add(async () => {
+      onStart.resolve()
+      return onFinish.promise
     })
 
-    log('put value finished: %b', key)
+    try {
+      await onStart.promise
+
+      await drain(this.client.dht.put(key, value, {
+        ...options,
+        signal
+      }))
+    } catch (err) {
+      log.error('put errored:', err)
+      throw err
+    } finally {
+      signal.clear()
+      onFinish.resolve()
+      log('put finished: %b', key)
+    }
   }
 
   /**
@@ -292,23 +323,44 @@ class DelegatedContentRouting implements ContentRouting, Startable {
   async get (key: Uint8Array, options: HTTPClientExtraOptions & AbortOptions = {}): Promise<Uint8Array> {
     log('get value start: %b', key)
     options.timeout = options.timeout ?? DEFAULT_TIMEOUT
-    options.signal = anySignal([this.abortController.signal].concat((options.signal != null) ? [options.signal] : []))
 
-    const value = await this.httpQueue.add(async () => {
-      for await (const event of this.client.dht.get(key, options)) {
+    const signal = anySignal([this.abortController.signal, options.signal])
+    const onStart = defer()
+    const onFinish = defer()
+
+    void this.httpQueue.add(async () => {
+      onStart.resolve()
+      return onFinish.promise
+    })
+
+    try {
+      await onStart.promise
+
+      let value: Uint8Array | undefined
+
+      for await (const event of this.client.dht.get(key, {
+        ...options,
+        signal
+      })) {
         if (event.name === 'VALUE') {
           log('get value finished: %b', key)
-          return event.value
+          value = event.value
+          break
         }
       }
 
-      throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
-    })
+      if (value === undefined) {
+        throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
+      }
 
-    if (value === undefined) {
-      throw errCode(new Error('Not found'), 'ERR_NOT_FOUND')
-    } else {
       return value
+    } catch (err) {
+      log.error('put errored:', err)
+      throw err
+    } finally {
+      signal.clear()
+      onFinish.resolve()
+      log('put finished: %b', key)
     }
   }
 }
