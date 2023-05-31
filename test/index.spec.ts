@@ -1,23 +1,23 @@
 /* eslint-env mocha */
 
+import { stop } from '@libp2p/interfaces/startable'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { Controller, createFactory } from 'ipfsd-ctl'
-import { create, Options, CID as IPFSCID } from 'ipfs-http-client'
+import goIpfs from 'go-ipfs'
+import { create, type Options, CID as IPFSCID } from 'ipfs-http-client'
+import { type Controller, createFactory } from 'ipfsd-ctl'
 import all from 'it-all'
 import drain from 'it-drain'
-import { isElectronMain, isNode } from 'wherearewe'
+import { CID } from 'multiformats/cid'
+import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { isElectronMain, isNode } from 'wherearewe'
 import { delegatedContentRouting } from '../src/index.js'
 // @ts-expect-error no types
-import goIpfs from 'go-ipfs'
-import pDefer from 'p-defer'
-import { CID } from 'multiformats/cid'
 import type { PeerId } from '@libp2p/interface-peer-id'
-import type { IDResult } from 'ipfs-core-types/src/root'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
-import { stop } from '@libp2p/interfaces/startable'
 import type { AbortOptions } from '@libp2p/interfaces'
-import { peerIdFromString } from '@libp2p/peer-id'
+import type { IDResult } from 'ipfs-core-types/src/root'
 
 const factory = createFactory({
   type: 'go',

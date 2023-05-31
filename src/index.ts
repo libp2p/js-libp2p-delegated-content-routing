@@ -1,15 +1,15 @@
 import { logger } from '@libp2p/logger'
-import drain from 'it-drain'
-import PQueue from 'p-queue'
-import defer from 'p-defer'
-import errCode from 'err-code'
 import anySignal from 'any-signal'
-import type { AbortOptions } from 'ipfs-core-types/src/utils'
+import errCode from 'err-code'
+import drain from 'it-drain'
+import defer from 'p-defer'
+import PQueue from 'p-queue'
 import type { ContentRouting } from '@libp2p/interface-content-routing'
+import type { PeerId } from '@libp2p/interface-peer-id'
 import type { PeerInfo } from '@libp2p/interface-peer-info'
 import type { Startable } from '@libp2p/interfaces/startable'
+import type { AbortOptions } from 'ipfs-core-types/src/utils'
 import type { CID } from 'multiformats/cid'
-import type { PeerId } from '@libp2p/interface-peer-id'
 
 const log = logger('libp2p:delegated-content-routing')
 
@@ -204,7 +204,7 @@ class DelegatedContentRouting implements ContentRouting, Startable {
 
     void this.httpQueue.add(async () => {
       onStart.resolve()
-      return await onFinish.promise
+      return onFinish.promise
     })
 
     try {
