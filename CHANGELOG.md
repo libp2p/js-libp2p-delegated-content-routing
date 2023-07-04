@@ -1,3 +1,17 @@
+## [4.0.6](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.5...v4.0.6) (2023-07-04)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([68c888a](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/68c888ac767fc86ffbb5acec46ea024b9f6cffb4))
+* Update .github/workflows/stale.yml [skip ci] ([9d1f9f1](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/9d1f9f133a90b93e49bb1ad59f7308be1bf359a6))
+* Update .github/workflows/stale.yml [skip ci] ([bff7390](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/bff7390dc866605fe347f089221c4d0f7d04a110))
+
+
+### Dependencies
+
+* **dev:** bump go-ipfs from 0.20.0 to 0.21.0 ([#147](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/147)) ([7796a1f](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/7796a1f16edd085e723837ee51b8c63d298db03a))
+
 ## [4.0.5](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.4...v4.0.5) (2023-05-31)
 
 
