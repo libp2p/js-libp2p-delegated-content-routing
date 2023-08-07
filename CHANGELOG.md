@@ -1,3 +1,11 @@
+## [4.0.7](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.6...v4.0.7) (2023-08-07)
+
+
+### Dependencies
+
+* bump @libp2p/logger from 2.1.1 to 3.0.0 ([#152](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/152)) ([acb4bc9](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/acb4bc958b3693862643bc090e0e60c9392ac8aa))
+* **dev:** bump @libp2p/peer-id from 2.0.4 to 3.0.1 ([#154](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/154)) ([8d40935](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/8d4093507b49dd581d24c873061fb879872cbb70))
+
 ## [4.0.6](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.5...v4.0.6) (2023-07-04)
 
 
