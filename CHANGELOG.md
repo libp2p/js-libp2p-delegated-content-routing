@@ -1,3 +1,10 @@
+## [4.0.8](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.7...v4.0.8) (2023-08-07)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 39.0.13 to 40.0.9 ([#155](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/155)) ([9e21ace](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/9e21acee55e06ee6a5b4ac512a21bfda8f4b41ce))
+
 ## [4.0.7](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.6...v4.0.7) (2023-08-07)
 
 
