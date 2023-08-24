@@ -1,3 +1,32 @@
+## [4.0.8](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.7...v4.0.8) (2023-08-07)
+
+
+### Dependencies
+
+* **dev:** bump aegir from 39.0.13 to 40.0.9 ([#155](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/155)) ([9e21ace](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/9e21acee55e06ee6a5b4ac512a21bfda8f4b41ce))
+
+## [4.0.7](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.6...v4.0.7) (2023-08-07)
+
+
+### Dependencies
+
+* bump @libp2p/logger from 2.1.1 to 3.0.0 ([#152](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/152)) ([acb4bc9](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/acb4bc958b3693862643bc090e0e60c9392ac8aa))
+* **dev:** bump @libp2p/peer-id from 2.0.4 to 3.0.1 ([#154](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/154)) ([8d40935](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/8d4093507b49dd581d24c873061fb879872cbb70))
+
+## [4.0.6](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.5...v4.0.6) (2023-07-04)
+
+
+### Trivial Changes
+
+* Update .github/workflows/semantic-pull-request.yml [skip ci] ([68c888a](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/68c888ac767fc86ffbb5acec46ea024b9f6cffb4))
+* Update .github/workflows/stale.yml [skip ci] ([9d1f9f1](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/9d1f9f133a90b93e49bb1ad59f7308be1bf359a6))
+* Update .github/workflows/stale.yml [skip ci] ([bff7390](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/bff7390dc866605fe347f089221c4d0f7d04a110))
+
+
+### Dependencies
+
+* **dev:** bump go-ipfs from 0.20.0 to 0.21.0 ([#147](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/147)) ([7796a1f](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/7796a1f16edd085e723837ee51b8c63d298db03a))
+
 ## [4.0.5](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.4...v4.0.5) (2023-05-31)
 
 
