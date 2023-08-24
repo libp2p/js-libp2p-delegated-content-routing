@@ -3,7 +3,6 @@
 import { stop } from '@libp2p/interfaces/startable'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-// @ts-expect-error no types
 import goIpfs from 'go-ipfs'
 import { type Controller, createFactory } from 'ipfsd-ctl'
 import all from 'it-all'
