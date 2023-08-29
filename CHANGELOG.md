@@ -1,3 +1,17 @@
+## [4.0.9](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.8...v4.0.9) (2023-08-24)
+
+
+### Trivial Changes
+
+* add or force update .github/workflows/js-test-and-release.yml ([#158](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/158)) ([0203a35](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/0203a3523e994270e31e136ddb497cbe32638d63))
+* delete templates [skip ci] ([#157](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/157)) ([6f4ffdf](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/6f4ffdf0387522fe08213d1632d7496a2d65a0fb))
+* Update CODEOWNERS [skip ci] ([789b565](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/789b565324ab36fd1b5d0c54d1f548a4d08819a1))
+
+
+### Dependencies
+
+* bump multiformats from 11.0.2 to 12.0.1 ([#146](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/146)) ([d6fb0b7](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/d6fb0b7b8f43eed6321bfcc8f263fdc5239650ea))
+
 ## [4.0.8](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.7...v4.0.8) (2023-08-07)
 
 
