@@ -146,7 +146,7 @@
   },
   "devDependencies": {
     "@libp2p/peer-id": "^3.0.2",
-    "aegir": "^40.0.11",
+    "aegir": "^41.0.0",
     "go-ipfs": "^0.22.0",
     "ipfs-core-types": "^0.14.1",
     "ipfsd-ctl": "^13.0.0",
