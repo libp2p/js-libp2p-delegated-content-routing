@@ -1,3 +1,18 @@
+## [4.0.10](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.9...v4.0.10) (2023-10-06)
+
+
+### Trivial Changes
+
+* add missing dep ([2a1bdd3](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/2a1bdd33e835d9381fb20303be52b066dbe26bbb))
+* Update .github/pull_request_template.md [skip ci] ([c22b1d4](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/c22b1d4bfd4f1b9b4f485d9f5edc2972e96c0a0c))
+* update config ([719baee](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/719baee21ae849bca768fe116b1d919963b94ea1))
+
+
+### Dependencies
+
+* **dev:** bump aegir from 40.0.13 to 41.0.0 ([#160](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/160)) ([05a41d2](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/05a41d2d1dc8aa9b56438c3249666574390725f5))
+* update deps ([#159](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/159)) ([2e41108](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/2e41108f21e72afcee6a7e535787badc5b986de7))
+
 ## [4.0.9](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.8...v4.0.9) (2023-08-24)
 
 
