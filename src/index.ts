@@ -117,17 +117,17 @@ export interface StatResult {
 }
 
 export interface Delegate {
-  getEndpointConfig: () => { protocol: string, host: string, port: string }
+  getEndpointConfig(): { protocol: string, host: string, port: string }
 
   block: {
-    stat: (cid: CID, options?: AbortOptions) => Promise<StatResult>
+    stat(cid: CID, options?: AbortOptions): Promise<StatResult>
   }
 
   dht: {
-    findProvs: (cid: CID, options?: HTTPClientExtraOptions & AbortOptions) => AsyncIterable<QueryEvent>
-    provide: (cid: CID, options?: HTTPClientExtraOptions & DHTProvideOptions) => AsyncIterable<QueryEvent>
-    put: (key: string | Uint8Array, value: Uint8Array, options?: HTTPClientExtraOptions & AbortOptions) => AsyncIterable<QueryEvent>
-    get: (key: string | Uint8Array, options?: HTTPClientExtraOptions & AbortOptions) => AsyncIterable<QueryEvent>
+    findProvs(cid: CID, options?: HTTPClientExtraOptions & AbortOptions): AsyncIterable<QueryEvent>
+    provide(cid: CID, options?: HTTPClientExtraOptions & DHTProvideOptions): AsyncIterable<QueryEvent>
+    put(key: string | Uint8Array, value: Uint8Array, options?: HTTPClientExtraOptions & AbortOptions): AsyncIterable<QueryEvent>
+    get(key: string | Uint8Array, options?: HTTPClientExtraOptions & AbortOptions): AsyncIterable<QueryEvent>
   }
 }
 
