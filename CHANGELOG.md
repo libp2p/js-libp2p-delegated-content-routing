@@ -1,3 +1,10 @@
+## [4.0.11](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.10...v4.0.11) (2023-10-09)
+
+
+### Dependencies
+
+* swap go-ipfs for kubo ([#161](https://github.com/libp2p/js-libp2p-delegated-content-routing/issues/161)) ([a168c51](https://github.com/libp2p/js-libp2p-delegated-content-routing/commit/a168c515a731f8bea00298f31111b6810e99c8c9))
+
 ## [4.0.10](https://github.com/libp2p/js-libp2p-delegated-content-routing/compare/v4.0.9...v4.0.10) (2023-10-06)
 
 
